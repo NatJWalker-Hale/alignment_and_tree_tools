@@ -18,7 +18,8 @@ if __name__ == "__main__":
     count = 0
     for i in root.iternodes(order=1): # postorder 
         if i.nchildren == 0: # at tip
-            if i.data['len'] > float(sys.argv[2]):
+            i.data['len'] = i.length
+            if i.length > float(sys.argv[2]):
                 count += 1
 
     if count > 0:

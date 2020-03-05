@@ -1,7 +1,7 @@
 import string, sys
 from shlex import shlex
 from phylo3 import Node
-import StringIO
+from io import StringIO,BytesIO
 
 
 class Tokenizer(shlex):
@@ -32,7 +32,10 @@ def parse(input, ttable=None):
     or a string (converted to StringIO)
     """
     if type(input) is str:
-        input = StringIO.StringIO(input)
+        try:
+            input = BytesIO(input)
+        except TypeError:
+            input = StringIO(input)
     
     start_pos = input.tell()
     tokens = Tokenizer(input)
@@ -146,8 +149,8 @@ def parse_from_file(filename):
         file = sys.stdin
     else:
         file = open(filename, 'r')
-    content = string.strip(file.read())
-    treedescs = string.split(content, ';')
+    content = file.read().strip()
+    treedescs = content.split(";")
     tree = parse(treedescs[0])
     file.close()
     return tree

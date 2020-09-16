@@ -8,11 +8,41 @@ from ete3 import Tree, PhyloTree
 import numpy as np
 
 
-def is_leaf(node):
-    if node.is_leaf():
-        return True
-    else:
-        return False
+def calc_trlen(t):
+    trlen = 0
+    for n in tr.iter_descendants(strategy="postorder"):
+        trlen += n.dist
+    return trlen
+
+
+def calc_sub_trlen(t):
+    sub_trlen = []
+    for n in tr.iter_descendants(strategy="postorder"):
+        if not n.is_leaf():
+            tmp_trlen = 0
+            for c in n.iter_descendants(strategy="postorder"):
+                tmp_trlen += c.dist
+            sub_trlen.append((n, tmp_trlen, tmp_trlen / len(n)))
+    return sub_trlen
+
+
+def resample(sub_trlen_l, niter):
+    resample_succ = {}
+    i = 0
+    nnode = len(sub_trlen_l)
+    tmp_l = [x[2] for x in sub_trlen_l]
+    for n in sub_trlen_l:
+        resample_succ[n[0]] = 0
+    while i < niter:
+        rs = np.random.choice(tmp_l, size=nnode, replace=False)
+        q95 = np.quantile(rs, q=0.95)
+        for n in sub_trlen_l:
+            if n[2] > q95:
+                resample_succ[n[0]] += 1
+        i += 1
+    for key, value in resample_succ.items():
+        resample_succ[key] = value / niter
+    return resample_succ
 
 
 if __name__ == "__main__":
@@ -23,6 +53,8 @@ if __name__ == "__main__":
     ap.add_argument("-t", "--tree", help="Newick treefile to check.")
     ap.add_argument("-og", "--outgroupf",
                     help="File of outgroup taxa in tree (one per line).")
+    ap.add_argument("-it", "--iterate", help="Number of resamples [1000]",
+                    type=int, default=1000)
     args = ap.parse_args()
 
     og_list = []
@@ -38,40 +70,17 @@ if __name__ == "__main__":
         if l.name.split("@")[0] in og_list:
             og_in_tr.append(l.name)
 
-    all_l = [x.name for x in tr.iter_leaves()]
+    all_l = [b.name for b in tr.iter_leaves()]
     ing = list(set(all_l) - set(og_in_tr))
 
     tr.set_outgroup(tr.get_common_ancestor(*og_in_tr))
     tr.prune(ing, preserve_branch_length=True)
     all_l = list(set(all_l) - set(og_in_tr))
 
-    trlen = 0
-    for n in tr.iter_descendants(strategy="postorder"):
-        trlen += n.dist
+    trlen = calc_trlen(tr)
 
-    node_jackknife = []
+    sub_trlen = calc_sub_trlen(tr)
 
-    for i in tr.iter_descendants(strategy="postorder"):
-        if not i.is_leaf():
-            tmp_trlen = 0
-            for j in tr.iter_descendants(strategy="postorder"):
-                if j == i:
-                    for k in j.iter_descendants(strategy="postorder"):
-                        tmp_trlen += k.dist
-                else:
-                    continue
-            node_jackknife.append((i, tmp_trlen, tmp_trlen / len(i),
-                                   len(i)))
+    resamp_dict = resample(sub_trlen, args.iterate)
 
-    sorted_node_jackknife = sorted(node_jackknife,
-                                   key=lambda x: x[2])
-    q1, q3 = np.percentile([x[2] for x in sorted_node_jackknife], [25, 75])
-    iqr = q3 - q1
-    upper_bound = q3 + (1.5 * iqr)
-
-    outlier_tips = []
-    outlier_node = [x[0] for x in sorted_node_jackknife if x[2] > upper_bound]
-    for n in outlier_node:
-        outlier_tips.extend([l.name for l in n.iter_leaves()])
-    for s in set(outlier_tips):
-        print(s)
+    print([(k, v) for k, v in sorted(resamp_dict.items(), key=lambda x: x[1])][-9][0])

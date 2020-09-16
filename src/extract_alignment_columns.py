@@ -1,6 +1,6 @@
 import sys,os
 
-## extracts alignment columns given in args. Need to be zero indexed, so column 1 would be column 0
+## extracts alignment columns given in args.
 
 def get_seqdict(onelnaln):
     seqdict = {} # key is sequence, value is string of characters at site given by collist
@@ -32,7 +32,7 @@ if __name__ == "__main__":
                     currentline = currentline + line
             temp_aln.write(currentline)
                 
-    collist = [int(i) for i in sys.argv[2:]]
+    collist = [int(i)-1 for i in sys.argv[2:]]
     #print collist
     seqdict = get_seqdict("aln_oneline.tmp")
     for k in seqdict.keys():

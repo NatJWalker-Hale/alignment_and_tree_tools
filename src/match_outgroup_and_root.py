@@ -2,7 +2,8 @@
 
 import sys
 import argparse
-import ete3
+from ete3 import PhyloTree
+from ete3 import coretype.tree
 
 
 def parse_og(path):

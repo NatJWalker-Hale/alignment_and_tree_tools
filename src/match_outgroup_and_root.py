@@ -2,7 +2,7 @@
 
 import sys
 import argparse
-from ete3 import Tree, PhyloTree, coretype.tree.TreeError
+import ete3
 
 
 def parse_og(path):

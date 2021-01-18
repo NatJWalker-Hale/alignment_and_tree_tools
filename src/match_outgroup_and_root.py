@@ -40,6 +40,7 @@ if __name__ == "__main__":
         t.set_outgroup(anc)
         print(t.write(format=1))
     except TreeError:
+        sys.stderr.write(str(args.tree) + "outgroup already rooted, printing\n")
         print(t.write(format=1))
 
 

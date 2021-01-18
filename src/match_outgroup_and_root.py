@@ -29,12 +29,17 @@ if __name__ == "__main__":
         if n.name.split("@")[0] in ogl:
             ogseq.append(n.name)
 
-    if not t.check_monophyly(values=ogseq, target_attr="name"):
-        print("outgroup is non-monophyletic, exiting")
+    try:
+        t.check_monophyly(values=ogseq, target_attr="name")
+    except TreeError:
+        sys.stderr.write(str(args.tree) + "outgroup is non-monophyletic, exiting\n")
         sys.exit()
 
     anc = t.get_common_ancestor(*ogseq)
-    t.set_outgroup(anc)
+    try:
+        t.set_outgroup(anc)
+        print(t.write(format=1))
+    except TreeError:
+        print(t.write(format=1))
 
-    print(t.write(format=1))
 

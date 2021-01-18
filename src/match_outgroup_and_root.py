@@ -2,7 +2,7 @@
 
 import sys
 import argparse
-from ete3 import Tree, PhyloTree
+from ete3 import Tree, PhyloTree, coretype.tree.TreeError
 
 
 def parse_og(path):
@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     try:
         t.check_monophyly(values=ogseq, target_attr="name")
-    except ete3.coretype.tree.TreeError:
+    except TreeError:
         sys.stderr.write(str(args.tree) + "outgroup is non-monophyletic, exiting\n")
         sys.exit()
 
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     try:
         t.set_outgroup(anc)
         print(t.write(format=1))
-    except ete3.coretype.tree.TreeError:
+    except TreeError:
         sys.stderr.write(str(args.tree) + "outgroup already rooted, printing\n")
         print(t.write(format=1))
 

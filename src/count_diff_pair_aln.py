@@ -6,6 +6,7 @@ from parse_fasta import parse_fasta
 
 def count_diff(seqDict, gaps=False):
     diffs = 0
+    diffDict = {}
     seqs = [x for x in seqDict.values()]
     if len(seqs[0]) != len(seqs[1]):
         print("sequences are not the same length, should be aligned")
@@ -16,10 +17,12 @@ def count_diff(seqDict, gaps=False):
                 continue
             elif seqs[0][i] != seqs[1][i]:
                 diffs += 1
+                diffDict[i] = (seqs[0][i], seqs[1][i])
         else:
             if seqs[0][i] != seqs[1][i]:
                 diffs += 1
-    return diffs
+                diffDict[i] = (seqs[0][i], seqs[1][i])
+    return diffs, diffDict
 
 
 if __name__ == "__main__":
@@ -34,6 +37,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     seqs = dict([x for x in parse_fasta(args.sequence)])
-    print(seqs)
-    diffs = count_diff(seqs, args.gapmode)
-    print(str(diffs))
+
+    diffC, diffD = count_diff(seqs, args.gapmode)
+    if args.gapmode:
+        print("There are " + str(diffC) + " differences, counting gaps")
+    else:
+        print("There are " + str(diffC) + " differences, including gaps")
+    print("")
+    print("pos\tS1\tS2")
+    for k, v in diffD.items():
+        print(str(k) + "\t" + v[0] + "\t" + v[1])

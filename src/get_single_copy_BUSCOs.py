@@ -36,7 +36,18 @@ if __name__ == "__main__":
         buscoDict[sp] = sc
 
     sets = [set(v) for _, v in buscoDict.items()]
-    print(sets[0].intersection(*sets[1:]))
+    oneToOne = sets[0].intersection(*sets[1:])
+
+    for orth in oneToOne:
+        seqDict = {}
+        for dirs in d:
+            seqs = dict([x for x in parse_fasta(wd + "/" + dirs + "/translated_proteins/" + orth + ".faa")])
+            seqDict[next(iter(seqs.items()))[0].split(" ")[0]] = next(iter(seqs.items()))[1]
+        with open(wd + "/" + orth + ".faa", "w") as outfa:
+            for k, v in seqDict.items():
+                outfa.write(">"+k+"\n")
+                outfa.write(v+"\n")
+                    
     
     
 

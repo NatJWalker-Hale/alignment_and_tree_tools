@@ -58,36 +58,29 @@ def count_shifts(inroot, min_clade_size, min_overlap):
                 names0 = set([x.split("@")[0] for x in child0.lvsnms()])
                 names1 = set([x.split("@")[0] for x in child1.lvsnms()])
                 if len(names0.intersection(names1)) >= min_overlap:  # n is duplication node
-                    print("Found duplication node")
                     if check_shift(n.parent, n):  # shift on dup node
                         shiftDict[(n.parent, n)] = "SD"
                     dupShift = 0
                     if len(child0.leaves()) >= min_clade_size:
                         countDict["Testable paralogs"] += 1
                         if check_shift(n, child0):  # first paralog has shift
-                            print("Found paralogous shift")
                             shiftDict[(n, child0)] = "PS"
                             dupShift += 1
                         else:  # sub-loop to check for nested shift
-                            print("Checking sub")
                             for cn in child0.iternodes(order="preorder"):
                                 for ccn in cn.children:
                                     if check_shift(cn, ccn):
-                                        print("Found nested shift")
                                         shiftDict[(cn, ccn)] = "PS"
                                         dupShift += 1
                     if len(child1.leaves()) >= min_clade_size:
                         countDict["Testable paralogs"] += 1
                         if check_shift(n, child1):  # second paralog has shift
-                            print("Found paralogous shift")
                             shiftDict[(n, child1)] = "PS"
                             dupShift += 1
                         else:  # sub-loop to check for nested shift
-                            print("Checking sub")
                             for cn in child1.iternodes(order="preorder"):
                                 for ccn in cn.children:
                                     if check_shift(cn, ccn):
-                                        print("Found nested shift")
                                         shiftDict[(cn, ccn)] = "PS"
                                         dupShift += 1
                     # if dupShift == 1:  # can be 0, 1 or 2
@@ -96,15 +89,12 @@ def count_shifts(inroot, min_clade_size, min_overlap):
                     countDict["Testable orthologs"] += 1
                     try:
                         if check_shift(n.parent, n):
-                            countDict["Orthologous shifts"] += 1
-                            shiftDict[(n.parent, n)] = "OS"
+                            if (n.parent, n) in shiftDict.keys():
+                                continue
+                            else:
+                                shiftDict[(n.parent, n)] = "OS"
                     except AttributeError:
                         sys.stderr.write("no parent node, check\n")
-    countDict = parse_shift_dict(countDict, shiftDict)
-    return countDict, shiftDict
-
-
-def parse_shift_dict(countDict, shiftDict):
     for _, v in shiftDict.items():
         if v == "OS":
             countDict["Orthologous shifts"] += 1
@@ -112,9 +102,7 @@ def parse_shift_dict(countDict, shiftDict):
             countDict["Shifts on duplication"] += 1
         elif v == "PS":
             countDict["Paralogous shifts"] += 1
-        elif v == "PC":
-            countDict["Paralogous contrasts"] += 1
-    return countDict
+    return countDict, shiftDict
 
 
 if __name__ == "__main__":
@@ -133,5 +121,5 @@ if __name__ == "__main__":
                 nwkString = s.split("=", 1)[1].lstrip().rstrip()
 
     curroot = tree_reader.read_tree_string(nwkString)
-    cDict, shifts = count_shifts(curroot, 10, 5)
-    print(cDict)
+    cDict, shifts = count_shifts(curroot, 10, 10)
+    print(tFile, cDict)

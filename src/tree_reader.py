@@ -1,5 +1,6 @@
-import string, sys
-from node import Node
+import string
+import sys
+from treenode import Node
 #from cnode import Node
 
 """

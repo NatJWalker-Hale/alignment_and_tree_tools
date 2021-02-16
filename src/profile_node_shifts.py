@@ -110,6 +110,8 @@ if __name__ == "__main__":
         sys.argv.append("-h")
 
     parser = argparse.ArgumentParser()
+    parser.add_argument("-t", "--trim", help="remove outgroup \
+                        prior to profiling", type=bool, default=False)
     parser.add_argument("tree", help="janus output NEXUS tree, \
                         *.gophy.results.tre")
     args = parser.parse_args()
@@ -121,5 +123,7 @@ if __name__ == "__main__":
                 nwkString = s.split("=", 1)[1].lstrip().rstrip()
 
     curroot = tree_reader.read_tree_string(nwkString)
+    if args.trim:
+        curroot = curroot.children[1]
     cDict, shifts = count_shifts(curroot, 10, 10)
     print(tFile, cDict)

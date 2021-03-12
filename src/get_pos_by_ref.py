@@ -10,8 +10,8 @@ if __name__ == "__main__":
         sys.argv.append("-h")
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--positions", type=int, nargs="+",
-                        help="optionally, a space=separated list \
+    parser.add_argument("-p", "--positions", type=str,
+                        help="optionally, a comma-separated list \
                         of positions to correspond")
     parser.add_argument("alignment", help="alignment to get \
                         corresponding positions")
@@ -36,9 +36,11 @@ if __name__ == "__main__":
             corrDict[aln_pos] = seq_pos
             aln_pos += 1
             seq_pos += 1
+    # print(corrDict)
 
     if args.positions is not None:
-        for p in args.positions:
+        positions = [int(s.strip()) for s in args.positions.split(",")]
+        for p in positions:
             print(corrDict[p])
     else:
         print("aln_pos\tref_pos")

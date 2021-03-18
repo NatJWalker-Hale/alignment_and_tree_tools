@@ -48,19 +48,38 @@ if __name__ == "__main__":
                     # print(n.name,c.name)
                     if c.name != n.name:  # transition
                         to_change.append(c)
-                        
-    count = 0
-    for n in t.traverse(strategy="preorder"):
-        if not n.is_leaf():
-            if n in to_change:
-                count += 1
-                n.name = "#" + str(count)
-            else:
-                n.name = ""
 
     outTreeName = tFile.rstrip(".gophy.results.tre")
-    with open(outTreeName + ".godon.tre", "w") as newTreeFile:
-        newTreeFile.write(t.write(format=1)+"\n")
+    with open(outTreeName + ".godon.tre", "w") as outF:
+        outF.write(t.write(format=1)+"\n")
+
+    count = 0
+    for node in to_change:
+        for n in t.traverse(strategy="preorder"):
+            if not n.is_leaf():
+                if n == node:
+                    count += 1
+                    n.name = "#1"
+                else:
+                    n.name = ""
+        with open(outTreeName + ".godon.tre" + str(count), "w") as newTreeFile:
+            newTreeFile.write(t.write(format=1)+"\n")
+
+    # count = 0
+    # for n in t.traverse(strategy="preorder"):
+    #     if not n.is_leaf():
+    #         if n in to_change:
+    #             count += 1
+    #             n.name = "#" + str(count)
+    #             with open(outTreeName + ".godon.tre" + str(count),
+    #                       "w") as newTreeFile:
+    #                 newTreeFile.write(t.write(format=1)+"\n")
+    #         else:
+    #             n.name = ""
+
+    # outTreeName = tFile.rstrip(".gophy.results.tre")
+    # with open(outTreeName + ".godon.tre", "w") as newTreeFile:
+    #     newTreeFile.write(t.write(format=1)+"\n")
 
     with open(outTreeName + ".params.txt", "w") as paramFile:
         paramFile.write("model\tA\tC\tG\tT\n")

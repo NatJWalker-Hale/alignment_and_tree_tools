@@ -5,6 +5,12 @@ import argparse
 import tree_reader
 
 
+def parse_og(path):
+    with open(path, "r") as ogfile:
+        og = [line.strip() for line in ogfile.readlines()]
+    return og
+
+
 def calc_shift_dist(params1, params2):
     """Calculates euclidean distance between two compositional vectors"""
     dist = sum([(a - b)**2 for a, b in zip(params1, params2)])**0.5
@@ -40,8 +46,13 @@ def count_shifts(inroot, min_clade_size, min_overlap):
     }
 
     shiftDict = {}
+    count = 0
     for n in inroot.iternodes(order="preorder"):
+        if count == 0:
+            count += 1
+            continue
         if n.istip:
+            count += 1
             continue
         if len(n.leaves()) >= min_clade_size:
             # only consider clades large enough to test
@@ -95,6 +106,7 @@ def count_shifts(inroot, min_clade_size, min_overlap):
                                 shiftDict[(n.parent, n)] = "OS"
                     except AttributeError:
                         sys.stderr.write("no parent node, check\n")
+            count += 1
     for _, v in shiftDict.items():
         if v == "OS":
             countDict["Orthologous shifts"] += 1
@@ -110,8 +122,9 @@ if __name__ == "__main__":
         sys.argv.append("-h")
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-t", "--trim", help="remove outgroup \
-                        prior to profiling", type=bool, default=False)
+    parser.add_argument("-t", "--trimfile", help="file of taxa \
+                        to remove sequences from prior to \
+                        counting, one per line")
     parser.add_argument("tree", help="janus output NEXUS tree, \
                         *.gophy.results.tre")
     args = parser.parse_args()
@@ -123,7 +136,17 @@ if __name__ == "__main__":
                 nwkString = s.split("=", 1)[1].lstrip().rstrip()
 
     curroot = tree_reader.read_tree_string(nwkString)
-    if args.trim:
-        curroot = curroot.children[1]
+    if args.trimfile is not None:
+        OGs = parse_og(args.trimfile)
+        OGseqs = []
+        for i in curroot.lvsnms():
+            if i.split("@")[0] in OGs:
+                OGseqs.append(i)
+        print(OGseqs)
+        for n in curroot.iternodes(order="preorder"):
+            if set(n.lvsnms()) == set(OGseqs):  # assumes OG monophyletic
+                n.prune()
+
+    print(curroot)
     cDict, shifts = count_shifts(curroot, 10, 10)
     print(tFile, cDict)

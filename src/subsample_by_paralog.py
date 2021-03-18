@@ -5,7 +5,13 @@ from ete3 import Tree,PhyloTree
 # script to return a list of subsampled sequences based on genera in paralogs, such that each genus is only represented once. All names must be in format family_genus_species@seqid and tip names must
 # match alignment names exactly. Alignment in fasta format by default, this can easily be changed.
 
-CANDIDATES = ["Amaranthaceae_Ptilotus_exaltatus_hyb@KF747354.1_cds_AIS23505.1_1","Cactaceae_Carnegia_gigantea@Cgig1_18485_CgDODAa1","Caryophyllaceae_Telephium_imperatii@DODAa","Chenopodiaceae_Beta_vulgaris@XM_010675993.2_cds_XP_010674295.1_1","Kewaceae_Kewa_caespitosa@DODAa2","Montiaceae_Parakeelya_mirabilis@KF747352.1_cds_AIS23503.1_1","Nyctaginaceae_Mirabilis_jalapa@c44693_g1_i1_97_870_minus","Portulacaceae_Portulaca_grandiflora@AJ580598.1_cds_CAE45178.1_1"]
+CANDIDATES = [
+    "Aizoaceae_Fenestrania_aurantiaca@DN26394_c0_g1_i1",
+    "Aizoaceae_Juttandinteria_kovismontana@DN48225_c0_g1_i1",
+    "Aizoaceae_Glotyphylum_uncatum@DN28959_c0_g1_i1",
+    "Aizoaceae_Mesembryanthemum_crystallinum_GEN@08G219950.1",
+    "Aizoaceae_Conophytum_uviforme@DN35029_c0_g1_i1",
+]
 
 def mask_monophyly(rootnode): # this will modify the given tree in place
     dtip = []
@@ -58,7 +64,7 @@ if __name__ == "__main__":
         sys.exit()
 
     t = PhyloTree(sys.argv[1],alignment=sys.argv[2],alg_format="fasta") # change format for different alignment formats
-    t.set_species_naming_function(lambda node: node.name.split("@")[0].rstrip("_SRA").rstrip("_PAC") ) # change this id for different naming conventions, best to have family_genus_species@seqid.
+    t.set_species_naming_function(lambda node: node.name.split("@")[0].rstrip("_SRA").rstrip("_PAC").rstrip("_GEN").rstrip("_SRGEN").rstrip("_LRGEN") ) # change this id for different naming conventions, best to have family_genus_species@seqid.
     # Extensions  _SRA _PAC etc. are to allow for different sequencing efforts of the same taxa.
     mask_monophyly(t)
     print "\n".join(sample_by_paralog(t,sys.argv[3])+CANDIDATES)

@@ -1,3 +1,5 @@
+#! /usr/bin/python3
+
 import sys
 import os
 import argparse
@@ -7,6 +9,7 @@ from parse_fasta import parse_fasta
 def count_diff(seqDict, gaps=False):
     diffs = 0
     diffDict = {}
+    seqNames = [x for x in seqDict.keys()]
     seqs = [x for x in seqDict.values()]
     if len(seqs[0]) != len(seqs[1]):
         print("sequences are not the same length, should be aligned")
@@ -22,7 +25,7 @@ def count_diff(seqDict, gaps=False):
             if seqs[0][i] != seqs[1][i]:
                 diffs += 1
                 diffDict[i] = (seqs[0][i], seqs[1][i])
-    return diffs, diffDict
+    return seqNames, diffs, diffDict
 
 
 if __name__ == "__main__":
@@ -38,12 +41,15 @@ if __name__ == "__main__":
 
     seqs = dict([x for x in parse_fasta(args.sequence)])
 
-    diffC, diffD = count_diff(seqs, args.gapmode)
+    names, diffC, diffD = count_diff(seqs, args.gapmode)
     if args.gapmode:
         print("There are " + str(diffC) + " differences, counting gaps")
     else:
         print("There are " + str(diffC) + " differences, including gaps")
     print("")
+    print("S1: "+names[0])
+    print("S2: "+names[1])
+    print("")
     print("pos\tS1\tS2")
-    for k, v in diffD.items():
-        print(str(k) + "\t" + v[0] + "\t" + v[1])
+    for k, v in sorted(diffD.items(), key=lambda x: x[0]):
+        print(str(k+1) + "\t" + v[0] + "\t" + v[1])

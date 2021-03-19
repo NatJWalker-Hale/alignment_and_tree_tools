@@ -2,7 +2,9 @@
 
 import sys
 import argparse
+import tree_reader
 from parse_fasta import parse_fasta
+from treenode import Node
 
 
 
@@ -19,3 +21,10 @@ if __name__ == "__main__":
                         alignment, including ancestral \
                         sequences")
     args = parser.parse_args()
+
+    with open(tFile, "r") as t:
+        for s in t:
+            s = s.strip()
+            nwkString = s
+            
+    curroot = tree_reader.read_tree_string(nwkString)

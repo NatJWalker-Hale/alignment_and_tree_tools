@@ -27,7 +27,7 @@ def create_seqs_from_diff(seqDict, diffDict):
     baseName = list(seqDict.keys())[0]
     background = list(seqDict.values())[0]
     for k, v in diffDict.items():
-        newName = baseName+"_"+str(k+1)+str(background[k])+"_to_"+str(v)
+        newName = baseName+"_"+str(background[k])+str(k+1)+str(v)
         outDict[newName] = background[:k]+str(v)+background[k+1:]
     return outDict
 

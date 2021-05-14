@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#! /usr/bin/python3.9
 
 
 import sys
@@ -26,7 +26,8 @@ if __name__ == "__main__":
         sys.argv.append("-h")
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("tree", help="janus output NEXUS tree, *.gophy.results.tre")
+    parser.add_argument("tree", help="janus output NEXUS tree, \
+                        *.gophy.results.tre")
     args = parser.parse_args()
 
     tFile = args.tree
@@ -49,7 +50,8 @@ if __name__ == "__main__":
                     if c.name != n.name:  # transition
                         to_change.append(c)
 
-    outTreeName = tFile.rstrip(".gophy.results.tre")
+    outTreeName = ".".join(tFile.split(".")[:-3])
+    sys.stderr.write(outTreeName+"\n")
     with open(outTreeName + ".godon.tre", "w") as outF:
         outF.write(t.write(format=1)+"\n")
 

@@ -45,7 +45,7 @@ if __name__ == "__main__":
     if args.gapmode:
         print("There are " + str(diffC) + " differences, counting gaps")
     else:
-        print("There are " + str(diffC) + " differences, including gaps")
+        print("There are " + str(diffC) + " differences, excluding gaps")
     print("")
     print("S1: "+names[0])
     print("S2: "+names[1])

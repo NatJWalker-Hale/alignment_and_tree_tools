@@ -145,7 +145,7 @@ def count_shifts(inroot, min_clade_size, min_overlap, format="NEX"):
                                 continue
                             else:
                                 shiftDict[(n, child0)] = "PS"
-                                m = get_model(child0)
+                                m = get_model(child0, format)
                                 nodeDict[child0.number] = {
                                     "shift": True,
                                     "model": m,
@@ -159,7 +159,7 @@ def count_shifts(inroot, min_clade_size, min_overlap, format="NEX"):
                                             continue
                                         else:
                                             shiftDict[(c.parent, c)] = "PS"
-                                            m = get_model(c)
+                                            m = get_model(c, format)
                                             nodeDict[c.number] = {
                                                 "shift": True,
                                                 "model": m,
@@ -175,7 +175,7 @@ def count_shifts(inroot, min_clade_size, min_overlap, format="NEX"):
                                 continue
                             else:
                                 shiftDict[(n, child1)] = "PS"
-                                m = get_model(child1)
+                                m = get_model(child1, format)
                                 nodeDict[child1.number] = {
                                     "shift": True,
                                     "model": m,
@@ -189,7 +189,7 @@ def count_shifts(inroot, min_clade_size, min_overlap, format="NEX"):
                                             continue
                                         else:
                                             shiftDict[(c.parent, c)] = "PS"
-                                            m = get_model(c)
+                                            m = get_model(c, format)
                                             nodeDict[c.number] = {
                                                 "shift": True,
                                                 "model": m,
@@ -255,7 +255,7 @@ if __name__ == "__main__":
             elif s.startswith("("):
                 nwkString = s.strip()
                 treForm = "NWK"
-                
+    
     curroot = tree_reader.read_tree_string(nwkString)
     # for n in curroot.iternodes(order="preorder"):
     #     print(n.label)

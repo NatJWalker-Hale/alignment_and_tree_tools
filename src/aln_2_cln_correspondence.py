@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
     seqs = dict([x for x in parse_fasta(args.alignment)])
     sites = get_site_dict(seqs)
-    
+
     print("original\tclean")
     c = 0
     for k, v in sites.items():

@@ -84,8 +84,10 @@ def count_shifts(inroot, min_clade_size, min_overlap, format="NEX"):
         "Testable orthologs": 0,
         "Orthologous shifts": 0,
         "Testable paralogs": 0,
+        "Testable nested paralogs": 0,
         "Shifts on duplication": 0,
-        "Paralogous shifts": 0
+        "Paralogous shifts": 0,
+        "Nested paralogous shifts": 0
     }
 
     shiftDict = {}
@@ -103,7 +105,7 @@ def count_shifts(inroot, min_clade_size, min_overlap, format="NEX"):
             countDict["Testable nodes"] += 1
             ntaxa = len(set([x.split("@")[0] for x in n.lvsnms()]))
             if ntaxa == ntips:  # 1-to-1 orthology
-                countDict["Testable nodes"] += 1
+                countDict["Testable orthologs"] += 1
                 if check_shift(n.parent, n, format):
                     if (n.parent, n) in shiftDict.keys():
                         # already registered for whatever reason
@@ -123,6 +125,7 @@ def count_shifts(inroot, min_clade_size, min_overlap, format="NEX"):
                 names1 = set([x.split("@")[0] for x in child1.lvsnms()])
                 if len(names0.intersection(names1)) >= min_overlap:
                     # n is duplication node of acceptable size
+                    countDict["Testable paralogs"] += 1
                     if check_shift(n.parent, n, format):
                         # shift is on duplication node
                         if (n.parent, n) in shiftDict.keys():
@@ -154,6 +157,7 @@ def count_shifts(inroot, min_clade_size, min_overlap, format="NEX"):
                         else:  # start the sub-loop
                             for c in child0.iternodes(order="preorder"):
                                 if len(c.leaves()) >= min_clade_size:
+                                    countDict["Testable nested paralogs"] += 1
                                     if check_shift(c.parent, c, format):
                                         if (c.parent, c) in shiftDict.keys():
                                             continue
@@ -163,7 +167,7 @@ def count_shifts(inroot, min_clade_size, min_overlap, format="NEX"):
                                             nodeDict[c.number] = {
                                                 "shift": True,
                                                 "model": m,
-                                                "type": "PS"
+                                                "type": "NPS"
                                             }
                     if len(child1.leaves()) >= min_clade_size:
                         # paralog that can be tested
@@ -184,6 +188,7 @@ def count_shifts(inroot, min_clade_size, min_overlap, format="NEX"):
                         else:  # start the sub-loop
                             for c in child1.iternodes(order="preorder"):
                                 if len(c.leaves()) >= min_clade_size:
+                                    countDict["Testable nested paralogs"] += 1
                                     if check_shift(c.parent, c, format):
                                         if (c.parent, c) in shiftDict.keys():
                                             continue
@@ -193,7 +198,7 @@ def count_shifts(inroot, min_clade_size, min_overlap, format="NEX"):
                                             nodeDict[c.number] = {
                                                 "shift": True,
                                                 "model": m,
-                                                "type": "PS"
+                                                "type": "NPS"
                                             }
                 elif len(names0.intersection(names1)) == 0:
                     # not overlapping - this is node which has paralogs below
@@ -231,6 +236,8 @@ def count_shifts(inroot, min_clade_size, min_overlap, format="NEX"):
             countDict["Shifts on duplication"] += 1
         elif v == "PS":
             countDict["Paralogous shifts"] += 1
+        elif v == "NPS":
+            countDict["Nested paralogous shifts"] += 1
     return countDict, shiftDict, nodeDict
 
 
@@ -239,11 +246,13 @@ if __name__ == "__main__":
         sys.argv.append("-h")
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-t", "--trimfile", help="file of taxa \
-                        to remove sequences from prior to \
-                        counting, one per line")
     parser.add_argument("tree", help="janus output NEXUS tree, \
                         *.gophy.results.tre")
+    parser.add_argument("-m", "--mintest", help="minimum clade size \
+                        tested", type=int, default=11)
+    parser.add_argument("-mo", "--min_overlap", help="mininum taxon \
+                        overlap to count paralog", type=int,
+                        default=10)
     args = parser.parse_args()
     tFile = args.tree
 
@@ -256,22 +265,19 @@ if __name__ == "__main__":
                 nwkString = s.strip()
                 treForm = "NWK"
     
-    curroot = tree_reader.read_tree_string(nwkString)
+    try:
+        curroot = tree_reader.read_tree_string(nwkString)
+    except NameError:
+        sys.stderr.write(args.tree + " no tree defined\n")
+        sys.exit()
     # for n in curroot.iternodes(order="preorder"):
     #     print(n.label)
-    if args.trimfile is not None:
-        OGs = parse_og(args.trimfile)
-        OGseqs = []
-        for i in curroot.lvsnms():
-            if i.split("@")[0] in OGs:
-                OGseqs.append(i)
-        print(OGseqs)
-        for n in curroot.iternodes(order="preorder"):
-            if set(n.lvsnms()) == set(OGseqs):  # assumes OG monophyletic
-                n.prune()
 
     number_tree(curroot)
-    cDict, sDict, nDict = count_shifts(curroot, 10, 10, treForm)
+    cDict, sDict, nDict = count_shifts(curroot,
+                                       args.mintest,
+                                       args.min_overlap,
+                                       treForm)
     
     with open(tFile + ".shiftcount", "w") as out1:
         for k, v in cDict.items():

@@ -67,4 +67,5 @@ if __name__ == "__main__":
     print("child\tparent\tlength")
     print(curroot.label)
     for k, v in branches.items():
-        print(k[1] + "\t" + k[0] + "\t" + str(k[2]) + 2*"\t" + ",".join(v) + "\t" + ",".join(v))
+        print(k[1] + "\t" + k[0] + "\t" + str(k[2]) + 2*"\t" + ",".join(v) +
+              "\t" + ",".join(v))

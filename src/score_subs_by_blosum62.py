@@ -60,16 +60,16 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     b62 = ScoringMatrix()
-    possScores = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4]
-    hexPal = ["#0000FF", "#1717FF", "#2E2EFF", "#4545FF", "#5C5CFF", "#7373FF",
-              "#8B8BFF", "#A2A2FF", "#B9B9FF", "#D0D0FF" "#E7E7FF" "#FFFFFF",
-              "#FFBFBF", "#FF7F7F", "#FF3F3F", "#FF0000"]
-    rgbPal = [(0, 0, 255), (23, 23, 255), (46, 46, 255), (69, 69, 255),
-              (92, 92, 255), (115, 115, 255), (139, 139, 255), (162, 162, 255),
-              (185, 185, 255), (208, 208, 255), (231, 231, 255),
-              (255, 255, 255), (255, 191, 191), (255, 127, 127), (255, 63, 63),
-              (255, 0, 0)]
+    obsScores = [-4, -3, -2, -1,  0,  1,  2,  3]  # change for diff subs
+    hexPal = ["#FF0000", "#FF2424", "#FF4848", "#FF6D6D", "#FF9191", "#FFB6B6",
+              "#FFDADA", "#FFFFFF"]
+    rgbPal = [(255, 0, 0), (255, 36, 36), (255, 72, 72), (255, 109, 109),
+              (255, 145, 145), (255, 182, 182), (255, 218, 218),
+              (255, 255, 255)]
     scores = b62.getScoreList(args.subs)
-    print("pos\tscore\trgb")
+    print("pos\tscore\tr\tg\tb")
     for k, v in scores.items():
-        print(str(k) + "\t" + str(v) + "\t" + str(rgbPal[possScores.index(v)]))
+        print(str(k) + "\t" + str(v) + "\t" +
+              str(rgbPal[obsScores.index(v)][0]) + "\t" +
+              str(rgbPal[obsScores.index(v)][1]) + "\t" +
+              str(rgbPal[obsScores.index(v)][2]))

@@ -67,7 +67,7 @@ def calc_jsd(colPropDict1, colPropDict2):
     distDict = {}
     for k, v in colPropDict1.items():
         m = [(x + y) / 2 for x, y in zip(v, colPropDict2[k])]
-        jsd = (calc_kl(v, m) / 2) + (calc_kl(colPropDict2[k], m) / 2)
+        jsd = (kl(v, m) / 2) + (kl(colPropDict2[k], m) / 2)
         distDict[k] = jsd
     return distDict
 
@@ -93,6 +93,12 @@ if __name__ == "__main__":
     alns = {}
     for a in args.alignments:
         alns[args.alignments.index(a)] = dict([x for x in parse_fasta(a)])
+        lens = []
+        for v in alns.values():
+            lens.append(len(v))
+            if len(set(lens)) > 1:
+                print("alignments are not of the same length!")
+                sys.exit()
     # print(alns)
 
     alnsCols = {}
@@ -116,4 +122,4 @@ if __name__ == "__main__":
 
     print("pos\tjsd")
     for k, v in distances.items():
-        print(str(k) + "\t" + str(v))
+        print(str(k + 1) + "\t" + str(v))

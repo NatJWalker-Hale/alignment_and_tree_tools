@@ -45,16 +45,53 @@ if __name__ == "__main__":
     parser.add_argument("proportion", type=float, default=0.5,
                         help="proportion of missing or ambiguous \
                               data to clean")
+    parser.add_argument("-r", "--ref", help="reference sequence \
+                        to find correspondence")
     args = parser.parse_args()
 
     seqs = dict([x for x in parse_fasta(args.alignment)])
     sites = get_site_dict(seqs)
 
-    print("original\tclean")
-    c = 0
-    for k, v in sites.items():
-        if is_cleaned(v, args.proportion):
-            continue
-        else:
-            print(str(k+1) + "\t" + str(c+1))
-            c += 1
+    if args.ref is not None:
+        isCleanedDict = {}
+
+        for k, v in sites.items():
+            if is_cleaned(v, args.proportion):
+                isCleanedDict[k] = True
+            else:
+                isCleanedDict[k] = False
+        # print(isCleanedDict)
+
+        corrDict = {}
+        alnPos = 0
+        seqPos = 0
+        for i in seqs[args.ref]:
+            if i in ["X", "-", "?"]:
+                corrDict[alnPos] = 0
+                alnPos += 1
+            else:
+                corrDict[alnPos] = seqPos
+                alnPos += 1
+                seqPos += 1
+        # print(corrDict)
+
+        print("clean\tsequence")
+        c = 0
+        for k, v in corrDict.items():
+            if isCleanedDict[k]:
+                continue
+            else:
+                if v == 0:
+                    print(str(c + 1) + "\t" + str(v))
+                else:
+                    print(str(c + 1) + "\t" + str(v + 1))
+                c += 1
+    else:
+        print("original\tclean")
+        c = 0
+        for k, v in sites.items():
+            if is_cleaned(v, args.proportion):
+                continue
+            else:
+                print(str(k+1) + "\t" + str(c+1))
+                c += 1

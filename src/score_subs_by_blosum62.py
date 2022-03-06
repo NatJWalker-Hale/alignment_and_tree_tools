@@ -61,11 +61,10 @@ if __name__ == "__main__":
 
     b62 = ScoringMatrix()
     obsScores = [-4, -3, -2, -1,  0,  1,  2,  3]  # change for diff subs
-    hexPal = ["#FF0000", "#FF2424", "#FF4848", "#FF6D6D", "#FF9191", "#FFB6B6",
-              "#FFDADA", "#FFFFFF"]
-    rgbPal = [(255, 0, 0), (255, 36, 36), (255, 72, 72), (255, 109, 109),
-              (255, 145, 145), (255, 182, 182), (255, 218, 218),
-              (255, 255, 255)]
+    hexPal = ["#FF0000", "#FF3F3F", "#FF7F7F", "#FFBFBF", "#FFFFFF", "#AAAAFF",
+              "#5555FF", "#0000FF"]
+    rgbPal = [(255, 0, 0), (255, 63, 63), (255, 127, 127), (255, 191, 191),
+              (255, 255, 255), (170, 170, 255), (85, 85, 255), (0, 0, 255)]
     scores = b62.getScoreList(args.subs)
     print("pos\tscore\tr\tg\tb")
     for k, v in scores.items():

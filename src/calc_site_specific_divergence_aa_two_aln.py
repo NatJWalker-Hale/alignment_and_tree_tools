@@ -43,8 +43,18 @@ def calc_col_prop(colDict):
 def calc_euclidean(colPropDict1, colPropDict2):
     distDict = {}
     for k, v in colPropDict1.items():
-        distDict[k] = sum([(a - b)**2 for a, b in zip(v, colPropDict2[k])])**0.5
+        distDict[k] = sum([(a - b)**2 for a, b in zip(v, colPropDict2[k])]) ** 0.5
     return distDict
+
+
+def kl(a, b):
+    div = [x * math.log((x / y)) if x > 0 else 0 for x, y in zip(a, b)]
+    return sum(div)
+
+
+def jsd(a=[[1.0], [1.0], [1.0]]):
+    m = [sum(x) / len(a) for x in zip(*a)]
+    return sum([kl(x, m) / len(a) for x in a])
 
 
 def calc_kl(colProp1, colProp2):

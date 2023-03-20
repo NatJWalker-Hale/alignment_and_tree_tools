@@ -12,7 +12,9 @@ from parse_fasta import parse_fasta
 input as n different alignments corresponding to the same master alignment"""
 
 
-def get_columns(seqDict):
+def get_columns(seqDict: dict) -> dict:
+    """takes a dictionary of an alignment (key: name, value: sequence),
+    and returns a dictionary of columns (key: position, value: column)"""
     colDict = {}
     pos = 0
     for k, v in seqDict.items():
@@ -27,7 +29,9 @@ def get_columns(seqDict):
     return colDict
 
 
-def calc_col_prop(colDict):
+def calc_col_prop(colDict: dict) -> dict:
+    """takes a column dictionary from get_columns and returns a dictionary
+    of column amino acid state frequencies. Denominator does not count gaps."""
     colPropDict = {}
     aa = ["A", "R", "N", "D", "C", "Q", "E", "G", "H", "I", "L", "K", "M", "F",
           "P", "S", "T", "W", "Y", "V"]
@@ -44,15 +48,15 @@ def calc_col_prop(colDict):
     return colPropDict
 
 
-def kl(a, b):
+def kl(a: list, b: list) -> float:
     """where it follows that KL is defined only if for all x, Q(x) = 0
     implies P(x) = 0. If P(x) = 0 the corresponding term is taken as 0
     due to the limit"""
-    div = [x * math.log((x / y)) if x > 0 else 0 for x, y in zip(a, b)]
+    div = [x * math.log2((x / y)) if x > 0 else 0 for x, y in zip(a, b)]
     return sum(div)
 
 
-def jsd(a=[[1.0], [1.0], [1.0]]):
+def jsd(a: list = [[1.0], [1.0], [1.0]]) -> float:
     """calculates JSD for n distributions, provided as a list of lists.
     By default the mixture is calculated with equal weights.
 
@@ -63,7 +67,8 @@ def jsd(a=[[1.0], [1.0], [1.0]]):
     return sum([kl(x, m) / len(a) for x in a])
 
 
-def calc_jsd(colPropDict1, colPropDict2):
+def calc_jsd(colPropDict1: dict, colPropDict2: dict) -> dict:
+    """calculate jsd for two dictionaries of matching columns"""
     distDict = {}
     for k, v in colPropDict1.items():
         m = [(x + y) / 2 for x, y in zip(v, colPropDict2[k])]
@@ -72,7 +77,8 @@ def calc_jsd(colPropDict1, colPropDict2):
     return distDict
 
 
-def calc_jsd_scipy(colPropDict1, colPropDict2):
+def calc_jsd_scipy(colPropDict1: dict, colPropDict2: dict) -> dict:
+    """test for scipy implementation"""
     distDict = {}
     for k, v in colPropDict1.items():
         distDict[k] = distance.jensenshannon(v, colPropDict2[k]) ** 2
@@ -88,37 +94,30 @@ if __name__ == "__main__":
                         columns matching", nargs="+")
     args = parser.parse_args()
 
-    # print(len(args.alignments))
-
     alns = {}
     for a in args.alignments:
         alns[args.alignments.index(a)] = dict([x for x in parse_fasta(a)])
         lens = []
         for v in alns.values():
-            lens.append(len(v))
+            lens.append([len(l) for l in v.values()][0])
+            # print(lens)
             if len(set(lens)) > 1:
                 print("alignments are not of the same length!")
                 sys.exit()
-    # print(alns)
 
     alnsCols = {}
     for k, v in alns.items():
         alnsCols[k] = get_columns(v)
-    # print(alnsCols)
 
     colsProps = {}
     for k, v in alnsCols.items():
         colsProps[k] = calc_col_prop(v)
-    # print(colsProps)
 
     distances = {}
-
-    # print([x[0] for x in [v for v in colsProps.values()]])
 
     for k, v in colsProps[0].items():
         propsList = [x[k] for x in [v for v in colsProps.values()]]
         distances[k] = jsd(propsList)
-    # print(distances)
 
     print("pos\tjsd")
     for k, v in distances.items():

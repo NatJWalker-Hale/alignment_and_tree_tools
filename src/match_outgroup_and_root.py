@@ -32,7 +32,7 @@ if __name__ == "__main__":
     try:
         t.check_monophyly(values=ogseq, target_attr="name")
     except TreeError:
-        sys.stderr.write(str(args.tree) + "outgroup is non-monophyletic, exiting\n")
+        sys.stderr.write(str(args.tree) + " outgroup is non-monophyletic, exiting\n")
         sys.exit()
 
     anc = t.get_common_ancestor(*ogseq)
@@ -40,7 +40,7 @@ if __name__ == "__main__":
         t.set_outgroup(anc)
         print(t.write(format=1))
     except TreeError:
-        sys.stderr.write(str(args.tree) + "outgroup already rooted, printing\n")
+        sys.stderr.write(str(args.tree) + " outgroup already rooted, printing\n")
         print(t.write(format=1))
 
 

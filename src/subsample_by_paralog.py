@@ -1,17 +1,15 @@
 from __future__ import division
-import sys,os
-from ete3 import Tree,PhyloTree
+import os
+import sys
+from ete3 import Tree, PhyloTree
 
 # script to return a list of subsampled sequences based on genera in paralogs, such that each genus is only represented once. All names must be in format family_genus_species@seqid and tip names must
 # match alignment names exactly. Alignment in fasta format by default, this can easily be changed.
 
 CANDIDATES = [
-    # "Aizoaceae_Fenestrania_aurantiaca@DN26394_c0_g1_i1",
-    # "Aizoaceae_Juttandinteria_kovismontana@DN48225_c0_g1_i1",
-    # "Aizoaceae_Glotyphylum_uncatum@DN28959_c0_g1_i1",
-    # "Aizoaceae_Mesembryanthemum_crystallinum_GEN@08G219950.1",
-    # "Aizoaceae_Conophytum_uviforme@DN35029_c0_g1_i1",
-]
+
+]  # specific sequences to keep in
+
 
 def mask_monophyly(rootnode): # this will modify the given tree in place
     dtip = []

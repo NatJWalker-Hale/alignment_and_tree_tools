@@ -37,6 +37,7 @@ if __name__ == "__main__":
 
     print(args.gene_tree+"\t"+str(tr.check_monophyly(
                                                      values=og_in_tr,
-                                                     target_attr="species")[0]
+                                                     target_attr="species",
+                                                     unrooted=True)[0]
                                   )
           )

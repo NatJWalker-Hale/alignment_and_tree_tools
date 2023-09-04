@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 
 import sys
+import math
 import argparse
 from collections import Counter
 from scipy.spatial import distance
@@ -24,7 +25,8 @@ def get_columns(seqDict):
 
 def calc_col_prop(colDict):
     colPropDict = {}
-    aa = ["A", "R", "N", "D", "C", "Q", "E", "G", "H", "I", "L", "K", "M", "F", "P", "S", "T", "W", "Y", "V"]
+    aa = ["A", "R", "N", "D", "C", "Q", "E", "G", "H", "I", "L", "K", "M", "F",
+          "P", "S", "T", "W", "Y", "V"]
     for k, v in colDict.items():
         tot = sum([x[1] for x in Counter(v).items() if x[0] != "-"])
         props = []
@@ -41,12 +43,14 @@ def calc_col_prop(colDict):
 def calc_euclidean(colPropDict1, colPropDict2):
     distDict = {}
     for k, v in colPropDict1.items():
-        distDict[k] = sum([(a - b)**2 for a, b in zip(v, colPropDict2[k])])**0.5
+        distDict[k] = sum([(a - b)**2 for a, b in zip(v,
+                                                      colPropDict2[k])])**0.5
     return distDict
 
 
 def calc_kl(colProp1, colProp2):
-    div = [x * math.log((x / y)) for x, y in zip(colProp1, colProp2) if y != 0 and x != 0]
+    div = [x * math.log((x / y)) for x, y in zip(colProp1, colProp2)
+           if y != 0 and x != 0]
     kl = sum(div)
     return kl
 
@@ -84,8 +88,12 @@ if __name__ == "__main__":
 
     seqs1 = dict([x for x in parse_fasta(args.sequence)
                  if x[0].startswith(args.flag1)])
+    # for k in seqs1.keys():
+    #     print(k)
     seqs2 = dict([x for x in parse_fasta(args.sequence)
                  if x[0].startswith(args.flag2)])
+    # for k in seqs2.keys():
+    #     print(k)
     cols1 = get_columns(seqs1)
     cols2 = get_columns(seqs2)
     colProps1 = calc_col_prop(cols1)
@@ -100,6 +108,7 @@ if __name__ == "__main__":
         print("distance argument not recognised")
         sys.exit()
     print("pos,dist")
-    tmp = [(a+1, b) for a, b in zip(sorted(dist, key=dist.get, reverse=True), sorted(dist.values(), reverse=True))]
+    tmp = [(a+1, b) for a, b in zip(sorted(dist, key=dist.get, reverse=True),
+           sorted(dist.values(), reverse=True))]
     for i in tmp:
         print(str(i[0])+","+str(i[1]))

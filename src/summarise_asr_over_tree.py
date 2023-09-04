@@ -8,12 +8,12 @@ from parse_fasta import parse_fasta
 from treenode import Node
 
 
-def parse_probs(file):
+def parse_probs(file: str):
     df = pd.read_table(file, header=0)
     return df
 
 
-def count_diffs(seq1, seq2, ignoreGap=True):
+def count_diffs(seq1: str, seq2: str, ignoreGap=True) -> list:
     """iterate over two aligned sequences and return differences
     as state1posstate2, e.g. A235V"""
     if len(seq1) != len(seq2):
@@ -27,12 +27,14 @@ def count_diffs(seq1, seq2, ignoreGap=True):
     return diffs
 
 
-def get_anc_desc(node):
+def get_anc_desc(node: Node) -> dict:
     """iterate over all nodes in a node-labelled tree and create
     a dictionary of ancestor descendant relationships, where each
     entry is one branch and value is empty list to be populated"""
     brDict = {}
     for n in node.iternodes(order="preorder"):
+        if n.parent is None:
+            continue  # skip root
         for c in n.children:
             brDict[(n.label, c.label, c.length)] = []
     return brDict
@@ -63,12 +65,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("tree", help="newick formatted tree, with ancestral \
-                        node labels")
+                        node labels. Ignores root by default.")
     parser.add_argument("sequences", help="FASTA formatted \
                         alignment, including ancestral \
                         sequences")
-    parser.add_argument("-g", "--gaps", help="ignore gaps (default True)",
-                        type=bool, default=True)
+    parser.add_argument("-g", "--gaps", help="include gaps (default False)",
+                        type=bool, default=False)
     parser.add_argument("-r", "--robust", help="count only substitutions \
                         where parent and child are unambiguous, i.e. PP > 0.8 \
                         (default False)",
@@ -90,17 +92,18 @@ if __name__ == "__main__":
 
     curroot = tree_reader.read_tree_string(nwkString)
     branches = get_anc_desc(curroot)
+    #print(branches)
 
     seqs = dict([x for x in parse_fasta(args.sequences)])
     # print(seqs)
 
     if args.robust:
         probs = parse_probs(args.probs)
-        add_subs_robust(branches, seqs, probs, args.gaps)
+        add_subs_robust(branches, seqs, probs, not args.gaps)
     else:
-        add_subs(branches, seqs, args.gaps)
+        add_subs(branches, seqs, not args.gaps)
 
     print("parent\tchild\tsubs")
-    print(curroot.label)
+    # print(curroot.label)
     for k, v in branches.items():
         print(k[0] + "\t" + k[1] + "\t" + ",".join(v))

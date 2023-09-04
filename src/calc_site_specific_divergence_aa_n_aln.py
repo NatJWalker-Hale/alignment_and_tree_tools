@@ -37,6 +37,9 @@ def calc_col_prop(colDict: dict) -> dict:
           "P", "S", "T", "W", "Y", "V"]
     for k, v in colDict.items():
         tot = sum([x[1] for x in Counter(v).items() if x[0] != "-"])
+        if tot == 0:
+            sys.stderr.write("skipping empty column " + str(k) + "\n")
+            continue
         props = []
         for i in aa:
             try:
@@ -99,7 +102,7 @@ if __name__ == "__main__":
         alns[args.alignments.index(a)] = dict([x for x in parse_fasta(a)])
         lens = []
         for v in alns.values():
-            lens.append([len(l) for l in v.values()][0])
+            lens.append([len(seq) for seq in v.values()][0])
             # print(lens)
             if len(set(lens)) > 1:
                 print("alignments are not of the same length!")
@@ -113,11 +116,20 @@ if __name__ == "__main__":
     for k, v in alnsCols.items():
         colsProps[k] = calc_col_prop(v)
 
+    cols = []
+    for _, v in colsProps.items():
+        cols.append(set([k for k in v.keys()]))
+    inAll = sorted(list(set.intersection(*cols)))
+
     distances = {}
 
-    for k, v in colsProps[0].items():
+    for k in inAll:
         propsList = [x[k] for x in [v for v in colsProps.values()]]
         distances[k] = jsd(propsList)
+
+    # for k, v in colsProps[0].items():
+    #     propsList = [x[k] for x in [v for v in colsProps.values()]]
+    #     distances[k] = jsd(propsList)
 
     print("pos\tjsd")
     for k, v in distances.items():

@@ -1,23 +1,22 @@
-import string
 import sys
 from treenode import Node
-#from cnode import Node
 
-"""
-this takes a newick string as instr
-and reads the string and makes the 
-nodes and returns the root node
-"""
+
 def read_tree_string(instr):
+    """
+    this takes a newick string as instr
+    and reads the string and makes the
+    nodes and returns the root node
+    """
     root = None
     index = 0
     nextchar = instr[index]
     start = True
     keepgoing = True
     curnode = None
-    while keepgoing == True:
+    while keepgoing:
         if nextchar == "(":
-            if start == True:
+            if start:
                 root = Node()
                 curnode = root
                 start = False
@@ -44,8 +43,8 @@ def read_tree_string(instr):
             nextchar = instr[index]
             name = ""
             while True:
-                if nextchar == ',' or nextchar == ')' or nextchar == ':' \
-                    or nextchar == ';' or nextchar == '[':
+                if (nextchar == ',' or nextchar == ')' or nextchar == ':'
+                        or nextchar == ';' or nextchar == '['):
                     break
                 name += nextchar
                 if index < len(instr)-1:
@@ -64,8 +63,8 @@ def read_tree_string(instr):
             nextchar = instr[index]
             brlen = ""
             while True:
-                if nextchar == ',' or nextchar == ')' or nextchar == ':' \
-                    or nextchar == ';' or nextchar == '[':
+                if (nextchar == ',' or nextchar == ')' or nextchar == ':'
+                        or nextchar == ';' or nextchar == '['):
                     break
                 brlen += nextchar
                 index += 1
@@ -75,15 +74,15 @@ def read_tree_string(instr):
         elif nextchar == ' ':
             index += 1
             nextchar = instr[index]
-        else: # this is an external named node
+        else:  # this is an external named node
             newnode = Node()
             curnode.add_child(newnode)
             curnode = newnode
             curnode.istip = True
             name = ""
             while True:
-                if nextchar == ',' or nextchar == ')' or nextchar == ':' \
-                    or nextchar == ';' or nextchar == '[':
+                if (nextchar == ',' or nextchar == ')' or nextchar == ':'
+                        or nextchar == ';' or nextchar == '['):
                     break
                 name += nextchar
                 index += 1
@@ -95,8 +94,9 @@ def read_tree_string(instr):
         nextchar = instr[index]
     return root
 
+
 def read_tree_file_iter(inf):
-    info = open(inf,"r")
+    info = open(inf, "r")
     for i in info:
         if len(i) > 2:
             yield read_tree_string(i.strip())
@@ -105,4 +105,6 @@ def read_tree_file_iter(inf):
 
 if __name__ == "__main__":
     for s in read_tree_file_iter(sys.argv[1]):
-        print((s.get_newick_repr(True)+";"))
+        s.number_tree()
+        print(s.is_rooted())
+        # print((s.get_newick_repr(True, True)+";"))

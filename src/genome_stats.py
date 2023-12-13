@@ -76,7 +76,7 @@ if __name__ == "__main__":
         gen.length += len(x[1])
         gen.n_contigs += 1
         gen.lengths.append(len(x[1]))
-        counts = Counter(x[1])
+        counts = Counter(x[1].upper())  # for case insensitivity
         gen.Ns += counts["N"]
         gen.As += counts["A"]
         gen.Cs += counts["C"]

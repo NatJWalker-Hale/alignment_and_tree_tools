@@ -40,26 +40,6 @@ class Assembly:
         print(f"N90: {self.N90} L90: {self.L90}")
 
 
-def parse_fasta(path):  # courtesy of Jonathan Chang https://gist.github.com/jonchang/6471846
-    """Given a path tries to parse a fasta file. Returns an iterator which
-    yields a (name, sequence) tuple"""
-    with open(path) as handle:
-        name = sequence = ""
-        for line in handle:
-            line = line.strip()
-            if line.startswith(">"):
-                if name:
-                    yield name, sequence
-                name = line[1:]
-                sequence = ""
-                continue
-            sequence += line
-        # yield the last sequence
-        if name and sequence:
-            yield name, sequence
-# could also use Biopython SeqIO but time savings are miniscule
-
-
 if __name__ == "__main__":
     if len(sys.argv[1:]) == 0:
         sys.argv.append("-h")
@@ -72,16 +52,27 @@ if __name__ == "__main__":
     
     gen = Assembly()
     gen.file = args.assembly
-    for x in parse_fasta(args.assembly):
-        gen.length += len(x[1])
-        gen.n_contigs += 1
-        gen.lengths.append(len(x[1]))
-        counts = Counter(x[1].upper())  # for case insensitivity
-        gen.Ns += counts["N"]
-        gen.As += counts["A"]
-        gen.Cs += counts["C"]
-        gen.Gs += counts["G"]
-        gen.Ts += counts["T"]
+    with open(args.assembly, "r") as f:
+        length = 0
+        line = f.readline().strip()  # here we read lines into mem one at a time
+        while line:
+            if line.startswith(">"):
+                if length:
+                    gen.lengths.append(length)
+                    gen.length += length
+                length = 0
+                gen.n_contigs += 1
+            else:
+                length += len(line)
+                counts = Counter(line.upper())
+                gen.Ns += counts["N"]
+                gen.As += counts["A"]
+                gen.Cs += counts["C"]
+                gen.Gs += counts["G"]
+                gen.Ts += counts["T"]
+            line = f.readline().strip()
+        gen.lengths.append(length)
+        gen.length += length
 
     # one way (slow, but works)
     # halflen = gen.length / 2

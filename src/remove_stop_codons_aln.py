@@ -30,7 +30,7 @@ def remove_stop(seq):
             if i+3 < len(seq):
                 seq = seq[:i]+"---"+seq[i+3:]
             elif i+3 == len(seq):
-                seq = seq[:i-3]+"---"
+                seq = seq[:i]+"---"
         i += 3
     return seq
 

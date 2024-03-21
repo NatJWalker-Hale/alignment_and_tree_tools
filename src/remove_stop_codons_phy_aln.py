@@ -10,7 +10,17 @@ import re
 import sys
 import argparse
 
-STOP = ["TAA","taa","TGA","tga","TAG","tag"] # for case insensitivity 
+STOP = ["TAA","taa","TGA","tga","TAG","tag"] # for case insensitivity
+
+
+def check_aligned(seq_dict: dict) -> bool:
+    """
+    checks if sequences in a sequence dictionary are the same length
+    """
+    if len(set(len(s) for s in seq_dict.values())) > 1:
+        return False
+    return True
+
 
 def parse_phylip(path: str):
     """
@@ -35,6 +45,21 @@ def parse_phylip(path: str):
         yield header, seq
 
 
+def write_phylip_str(seq_dict: dict) -> str:
+    """
+    writes a PHYLIP-formatted string from an aligned sequence dictionary {header: sequence}
+    """
+    if not check_aligned(seq_dict):
+        raise ValueError("sequences are not aligned, write to FASTA instead")
+    nseq = len(seq_dict)
+    seql = set(len(v) for v in seq_dict.values()).pop()
+    out = ""
+    out += f" {nseq} {seql}\n"
+    for header, seq in seq_dict.items():
+        out += f"{header}\t{seq}\n"
+    return out
+
+
 def remove_stop(seq):
     i = 0
     while i < len(seq):
@@ -43,7 +68,7 @@ def remove_stop(seq):
             if i+3 < len(seq):
                 seq = seq[:i]+"---"+seq[i+3:]
             elif i+3 == len(seq):
-                seq = seq[:i-3]+"---"
+                seq = seq[:i]+"---"
         i += 3
     return seq
 
@@ -52,13 +77,15 @@ if __name__ == "__main__":
         sys.argv.append("-h")
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-s","--sequence",help="Codon sequence file.")
+    parser.add_argument("sequence",help="Codon sequence file.")
     args = parser.parse_args()
 
-    seq_dict = dict(parse_phylip(args.sequence))
-    for key, value in seq_dict.items():
+    seqs = dict(parse_phylip(args.sequence))
+    for key, value in seqs.items():
         if len(value) % 3 != 0:
             print("Sequence length not evenly divisible by 3. Check file.")
             sys.exit()
-        print(">"+key)
-        print(remove_stop(value))
+        seqs[key] = remove_stop(value)
+    
+    print(write_phylip_str(seqs))
+    

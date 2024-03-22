@@ -71,7 +71,7 @@ if __name__ == "__main__":
                 gen.Gs += counts["G"]
                 gen.Ts += counts["T"]
             line = f.readline().strip()
-        gen.lengths.append(length)
+        gen.lengths.append(length) # write lengths of final contig
         gen.length += length
 
     # one way (slow, but works)

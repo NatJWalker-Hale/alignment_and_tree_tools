@@ -14,6 +14,8 @@ class Node:
         self.children = []
         self.nchildren = 0
         self.excluded_dists = []
+        self.note = ""
+        self.number = 0  # this is my mod of Stephen's
 
     def order_subtrees_by_size(self, n2s=None, recurse=False, reverse=False):
         if n2s is None:
@@ -53,7 +55,7 @@ class Node:
     def leaves(self):
         return [ n for n in self.iternodes() if n.istip ]
 
-    def iternodes(self, order=POSTORDER, v=None):
+    def iternodes(self, order=PREORDER, v=None):
         """
         returns a list of nodes descendant from self - including self
         """

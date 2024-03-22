@@ -2,7 +2,7 @@ import sys
 import os
 import argparse
 
-STOP = ["TAA","taa","TGA","tga","TAG","tag"] # for case insensitivity 
+STOP = ["TAA","taa","TGA","tga","TAG","tag"] # for case insensitivity
 
 def parse_fasta(path): # courtesy of Jonathan Chang https://gist.github.com/jonchang/6471846
     """Given a path tries to parse a fasta file. Returns an iterator which

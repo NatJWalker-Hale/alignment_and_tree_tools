@@ -25,7 +25,7 @@ if __name__ == "__main__":
                 if emp_dict[k][n] == "-":
                     sim_dict[k] = sim_dict[k][:n]+"-"+sim_dict[k][n+1:]
             except KeyError:
-                sys.stderr.write(k + " not in simulated data, skipping")
+                sys.stderr.write(k + " not in simulated data, skipping\n")
                 
     for k, v in sim_dict.items():
         print(">"+k)

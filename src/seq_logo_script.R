@@ -29,9 +29,9 @@ aa1 <- sweep(aa1, 2, df$size, FUN="*")
 # make custom col scheme
 # my version of CLUSTALX colours
 
-cs1 <- make_col_scheme(chars = dimnames(aa1)[[1]], cols = c("#2a7fff", "#ff0000", "#3db83d", "#a93aa3", "#f08080",
+cs1 <- make_col_scheme(chars = dimnames(aa1)[[1]], cols = c("#2a7fff", "#d40000", "#3db83d", "#a93aa3", "#f08080",
                                                             "#3db83d", "#a93aa3", "#f18237", "#2ad4ff", "#899bd6",
-                                                            "#899bd6", "#ff0000", "#899bd6", "#899bd6", "#ffcc00",
+                                                            "#899bd6", "#d40000", "#899bd6", "#899bd6", "#ffcc00",
                                                             "#3db83d", "#3db83d", "#2a7fff", "#2ad4ff", "#2a7fff"))
 
 ggseqlogo(aa1, method="custom", col_scheme=cs1)

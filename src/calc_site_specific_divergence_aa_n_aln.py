@@ -2,8 +2,8 @@
 
 
 """
-calculates site-specific Jensen-Shannon Divergences for n groups, given in
-input as n different alignments corresponding to the same master alignment
+calculates site-specific Jensen-Shannon Divergences for n groups, given in input as n different
+alignments corresponding to the same master alignment
 """
 
 

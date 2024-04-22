@@ -111,13 +111,13 @@ def parse_fasta_str(fa_str: str):
         line = line.strip()
         if line.startswith(">"):
             if name:
-                yield name, sequence
+                yield name, sequence.upper()
             name = line[1:]
             sequence = ""
             continue
         sequence += line
     if name and sequence:
-        yield name, sequence
+        yield name, sequence.upper()
 
 
 def get_fasta_str(seq_dict: dict[str: str]) -> str:
@@ -136,6 +136,54 @@ def write_fasta(seq_dict: dict, out_file: str):
     """
     with open(out_file, "w", encoding="utf-8") as outf:
         outf.write(get_fasta_str(seq_dict=seq_dict))
+
+
+def write_clustalw_conservation(seq_dict: dict) -> str:
+    """
+    write clustalw-style conservation string
+    """
+    strong = ["STA", "NEQK", "NHQK", "NDEQ", "QHRK", "MILV", "MILF", "HY", "FYW"]
+    weaker = ["CSA", "ATV", "SAG", "STNK", "STPA", "SGND", "SNDEQK", "NEQHRK", "FVLIM", "HFY"]
+    cols = get_columns(seq_dict)
+    cons_str = ""
+    for col in cols.values():
+        unique_chars = set(col.values())
+        if len(unique_chars) == 1:
+            cons_str += "*"
+        elif any(unique_chars <= set(group) for group in strong):
+            cons_str += ":"
+        elif any(unique_chars <= set(group) for group in weaker):
+            cons_str += "."
+        else:
+            cons_str += " "
+    return(cons_str)
+
+
+def write_clustalw(seq_dict: dict) -> str:
+    """
+    write clustalw formatted alignment from seq_dict
+    """
+    if len(set(len(s) for s in seq_dict.values())) > 1:
+        raise ValueError("sequences are not aligned!")
+    conservation = write_clustalw_conservation(seq_dict)
+    chars = len(list(seq_dict.values())[0])
+    tot = 0
+    out_str = ""
+    out_str += "CLUSTAL W (X.XX)\n\n\n"
+    longest_header = max(len(h) for h in seq_dict) + 6
+    while tot < chars:
+        for header, seq in seq_dict.items():
+            pad = longest_header - len(header)
+            if tot + 60 < chars:
+                out_str += f"{header}" + " "*pad + seq[tot:tot+60] + "\n"
+            else:
+                out_str += f"{header}" + " "*pad + seq[tot:chars] + "\n"
+        if tot + 60 < chars:
+            out_str += " "*longest_header + conservation[tot:tot+60] + "\n\n"
+        else:
+            out_str += " "*longest_header + conservation[tot:chars] + "\n\n"
+        tot += 60
+    return out_str
 
 
 def get_columns(seq_dict: dict) -> dict[int: dict[str: str]]:
@@ -179,7 +227,7 @@ def get_site_specific_frequencies(seq_dict: dict, smooth: bool=True) -> dict:
 
 def write_site_specific_frequencies(site_freqs: dict, outpath: str="site_frequencies.tsv"):
     """
-    write dictionary of site-specific frequencies to a tab-separated file of pos    comma-sep freqs
+    write dictionary of site-specific frequencies to a tab-separated file of pos\tcomma-sep freqs
     """
     with open(outpath, "w", encoding="utf-8") as sff:
         for pos, freq in site_freqs.items():

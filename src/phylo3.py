@@ -123,7 +123,7 @@ class Node:
                 elif measure == INTERNODES:
                     dist = 1
                 else:
-                    raise "InvalidMeasure"
+                    raise ValueError("InvalidMeasure")
                 child.leaf_distances(store, measure)
                 if child.istip:
                     leaf2len[child.label] = dist

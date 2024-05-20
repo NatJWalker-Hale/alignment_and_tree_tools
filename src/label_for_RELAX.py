@@ -15,13 +15,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Script to label trees with P. nagasau as \
                                      foreground for RELAX")
     parser.add_argument("tree", help="tree topology to label. Can have branch lengths. Internal \
-                        nodes will be overwritten if present")
+                        node labels will be overwritten if present")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-r", "--relax", help="hyphy-style labels for RELAX", action="store_const",
                        dest="type", const="relax", default="relax")
     group.add_argument("-p", "--paml", help="codeml-style labels for branch models", dest="type",
                        action="store_const", const="paml")
-    parser.add_argument("-b", "--brlen", help="write branch lengths", action="store_true")
+    parser.add_argument("-b", "--brlen", help="write branch lengths. Branch lengths will be \
+                        omitted by default", action="store_true")
     args = parser.parse_args(sys.argv[1:] or ["--help"])
 
     curroot = newick3.parse_from_file(args.tree)

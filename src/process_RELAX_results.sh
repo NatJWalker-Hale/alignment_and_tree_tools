@@ -5,6 +5,19 @@
 # usage: bash process_RELAX_output.sh [MODEL]
 #        MODEL: Ralt (RELAX alternative) or PD (partitioned descriptive)
 
+Help()
+{
+    echo "Run this script in a working dir with multiple RELAX jsons. Requires jq."
+    echo "writes RELAX output from alternative or partitioned descriptive model to tsv"
+    echo "bash process_RELAX_output.sh [MODEL]"
+    echo "Required arguments:"
+    echo "    [MODEL]: Ralt (RELAX alternative) or PD (partitioned descriptive)"
+}
+
+if [ $# -eq 0 ] ; then
+Help
+else
+
 echo $(ls *.RELAX.json) 1>&2
  
 echo "Processing above files" 1>&2
@@ -59,4 +72,5 @@ then
     echo -e "$gene\treference\t$lnL\t$aicc\t$rw0\t$rw1\t$rw2\t$rp0\t$rp1\t$rp2"
     echo -e "$gene\ttest\t$lnL\t$aicc\t$tw0\t$tw1\t$tw2\t$tp0\t$tp1\t$tp2"
     done
+fi
 fi

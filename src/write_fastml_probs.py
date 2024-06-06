@@ -39,7 +39,10 @@ def tip_state_to_prob_str(state: str) -> str:
 
 def node_row_to_prob_str(probs: pd.Series) -> str:
     out = ""
-    char_probs = {char: probs.iloc[idx] for idx, char in enumerate(AAORD)}
+    try:
+        char_probs = {char: probs.iloc[idx] for idx, char in enumerate(AAORD)}
+    except IndexError as e:
+        raise IndexError from e
     char_probs_ord = {char: char_probs[char] for char in AA}
     out = " ".join(f"p({char})={prob:.6f}" for char, prob in char_probs_ord.items() if prob != 0.)
     return out
@@ -81,10 +84,14 @@ if __name__ == "__main__":
                 else:
                     probs_series = probs[(probs['Node'] == n.label) &
                                          (probs['Site'] == col + 1)].iloc[:, 3:].squeeze()
-                    outf.write(f"of node: {n.label}: {node_row_to_prob_str(probs_series)}\n")
+                    # print(probs_series)
+                    try:
+                        outf.write(f"of node: {n.label}: {node_row_to_prob_str(probs_series)}\n")
+                    except IndexError:
+                        print(col, n.label, probs_series)
         outf.write("\n\n++++++++++++++++++++++++ marginal probs +++++++++++++++++++++++++++++++\n\n")
         outf.write("node,site,A,R,N,D,C,Q,E,G,H,I,L,K,M,F,P,S,T,W,Y,V\n")
-        outf.write(probs.iloc[:, np.r_[0, 1, 3:22]].to_csv(index=False, header=False))
+        outf.write(probs.iloc[:, np.r_[0, 1, 3:23]].to_csv(index=False, header=False))
         
     # out_str = ""
     # for col in out:

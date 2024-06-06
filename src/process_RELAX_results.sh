@@ -22,9 +22,9 @@ while :; do
 done
 
 if compgen -G "$(pwd)/*.RELAX.json" > /dev/null; then
-    echo "Found RELAX results in $(pwd)"
+    echo "Found RELAX results in $(pwd)" 1>&2
 else
-    echo "Did not find RELAX results in $(pwd)"
+    echo "Did not find RELAX results in $(pwd)" 1>&2
     exit
 fi
 

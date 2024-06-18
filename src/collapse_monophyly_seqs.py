@@ -110,19 +110,24 @@ def mask_paraphyletic_tips(curroot, unamb_chrDICT, ignore=[]):
     return curroot
 
 
-# def mask(curroot, clnfile, para=True, ignore=[]):
-#     chrDICT = {}  # key is seqid, value is number of unambiguous chrs
-#     for key, value in dict([x for x in parse_fasta(clnfile)]).items():
-#         for ch in ['-', 'X', "x", "?", "*"]:
-#             value = value.replace(ch, "")  # ignore gaps, xs and Xs
-#         chrDICT[key] = len(value)
-#     curroot = mask_monophyletic_tips(curroot, chrDICT, ignore)
-#     if para:
-#         curroot = mask_paraphyletic_tips(curroot, chrDICT, ignore)
-#     return curroot
+def mask(curroot, clnfile, para=True, ignore=[]):
+    chrDICT = {}  # key is seqid, value is number of unambiguous chrs
+    for key, value in dict([x for x in parse_fasta(clnfile)]).items():
+        for ch in ['-', 'X', "x", "?", "*"]:
+            value = value.replace(ch, "")  # ignore gaps, xs and Xs
+        chrDICT[key] = len(value)
+    curroot = mask_monophyletic_tips(curroot, chrDICT, ignore)
+    if para:
+        curroot = mask_paraphyletic_tips(curroot, chrDICT, ignore)
+    return curroot
 
 
 def mask_paralogs(tree: Node, clnaln: str, para=True, ignore=[]):
+    chrDICT = {}  # key is seqid, value is number of unambiguous chrs
+    for key, value in dict(parse_fasta(clnaln)).items():
+        for ch in ['-', 'X', "x", "?", "*"]:
+            value = value.replace(ch, "")  # ignore gaps, xs and Xs
+        chrDICT[key] = len(value)
     for n in tree.iternodes(order=0):
         if n.istip:  # don't consider tips
             continue
@@ -131,7 +136,12 @@ def mask_paralogs(tree: Node, clnaln: str, para=True, ignore=[]):
         if is_dup_sp_ovlp(n):  # skip nodes which are duplicates
             continue
         if is_monophyletic_sp(n):  # want to mask this
-            
+            ls = n.leaves()
+            keep = None
+            for l in ls:
+                if "_ptg" in l.label:
+                    keep = l
+            if 
 
 
 

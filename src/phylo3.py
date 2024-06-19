@@ -16,6 +16,7 @@ class Node:
         self.excluded_dists = []
         self.note = ""
         self.number = 0  # this is my mod of Stephen's
+        self.dup = False
 
     def order_subtrees_by_size(self, n2s=None, recurse=False, reverse=False):
         if n2s is None:

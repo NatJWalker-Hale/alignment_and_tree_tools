@@ -41,6 +41,8 @@ def mask_monophyletic_tips(curroot, unamb_chrDICT, ignore=[]):
             name = get_name(node.label)
             if name in ignore:
                 continue   # do not mask the genomes
+            if node.parent.dup:
+                continue
             for sister in node.get_sisters():
                 if sister.istip and name == get_name(sister.label):  # mask
                     if sample_id_from_name(node.label) == sample_id_from_name(sister.label):
@@ -80,7 +82,7 @@ def mask_paraphyletic_tips(curroot, unamb_chrDICT, ignore=[]):
             if name in ignore:
                 continue  # do not mask the genomes
             parent = node.parent
-            if node == curroot or parent == curroot or parent is None:
+            if node == curroot or parent == curroot or parent is None or parent.dup:
                 continue  # no paraphyletic tips for the root
             for para in parent.get_sisters():
                 if para.istip and name == get_name(para.label):  # mask
@@ -122,29 +124,62 @@ def mask(curroot, clnfile, para=True, ignore=[]):
     return curroot
 
 
-def mask_paralogs(tree: Node, clnaln: str, para=True, ignore=[]):
+def mask_paralogs(tree: Node, clnaln: str):
+    """
+    find individual paralogues that are monophyletic from a single species and reduce these to one
+    tip. Keep HiFi genome if present, otherwise longest unambiguous sequence in alignment
+    """
+    for node in tree.iternodes(order=0):
+        if node == tree or node.parent == tree or node.istip:
+            continue
+        if is_dup_sp_ovlp(node):
+            node.dup = True
+
     chrDICT = {}  # key is seqid, value is number of unambiguous chrs
     for key, value in dict(parse_fasta(clnaln)).items():
         for ch in ['-', 'X', "x", "?", "*"]:
             value = value.replace(ch, "")  # ignore gaps, xs and Xs
         chrDICT[key] = len(value)
-    for n in tree.iternodes(order=0):
-        if n.istip:  # don't consider tips
-            continue
-        if n.parent is None:  # skip root
-            continue
-        if is_dup_sp_ovlp(n):  # skip nodes which are duplicates
-            continue
-        if is_monophyletic_sp(n):  # want to mask this
-            ls = n.leaves()
-            keep = None
-            for l in ls:
-                if "_ptg" in l.label:
-                    keep = l
-            if 
 
-
-
+    tree = mask_monophyletic_tips(tree, chrDICT)
+    tree = mask_paraphyletic_tips(tree, chrDICT)
+    
+    # for n in tree.iternodes(order=1):  # do postorder so that nested duplicates are masked first
+    #     if n.istip:  # don't consider tips
+    #         continue
+    #     if n.parent is None:  # skip root
+    #         continue
+    #     if is_dup_sp_ovlp(n):  # skip nodes which are duplicates
+    #         print("found dup node")
+    #         continue
+    #     # if is_monophyletic_sp(n):  # want to mask this
+    #     #     print("found monophyletic node")
+    #     mask_monophyletic_tips(n, chrDICT)
+    #     #print(newick3.to_string(n) + ";")
+    #     mask_paraphyletic_tips(n, chrDICT)
+    #         ls = n.leaves()
+    #         keep = None
+    #         for l in ls:
+    #             if "_ptg_" in l.label:
+    #                 print(f"keeping hifi {l.label}")
+    #                 keep = l
+    #         if keep is None:
+    #             node_L = sorted([(l, chrDICT[l.label]) for l in ls], key=lambda x: x[1],
+    #                            reverse=True)
+    #             keep = node_L[0][0]
+    #         for node in n.iternodes(order=0):
+    #             if node.istip:
+    #                 if node is not keep:
+    #                     print(f"pruning {node.label}")
+    #                     node = node.prune()
+    #             if (
+    #                 node == tree
+    #                 and node.nchildren == 2
+    #                 ) or (
+    #                 node != tree
+    #                 and node.nchildren == 1):
+    #                     node, tree = remove_kink(node, tree)
+    print(newick3.to_string(tree) + ";")
 
 # def mask_monophyly(tre, clnaln, para=True, ignore=[]):
 #     with open(tre, "r", encoding='utf-8') as inf:
@@ -169,21 +204,12 @@ if __name__ == "__main__":
                                      same species to a single tip. Currently set up for Laura \
                                      Campbell's project on Phylidris nagasau, so some hardcoding \
                                      needs to be changed for general use")
-    parser.add_argument("-p", "--mask_paraphyly",
-                        help="Mask tips that are paraphyletic (default True)",
-                        default=True)
     parser.add_argument("tree",
                         help="The tree file in newick format to mask tips")
     parser.add_argument("aln_cln",
                         help="The cleaned alignment in FASTA format \
                         corresponding to the tips of the tree")
     args = parser.parse_args(sys.argv[1:] or ["--help"])
-    if args.mask_paraphyly:
-        para = True
-    else:
-        para = False
-    if args.exclude_file is not None:
-        ignore = get_names_to_exclude(args.exclude_file)
-    else:
-        ignore = []
-    _ = mask_monophyly(args.tree, args.aln_cln, para, ignore)
+    
+    curroot = newick3.parse_from_file(args.tree)
+    mask_paralogs(curroot, args.aln_cln)

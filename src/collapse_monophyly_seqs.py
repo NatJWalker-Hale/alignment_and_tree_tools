@@ -42,6 +42,7 @@ def mask_monophyletic_tips(curroot, unamb_chrDICT, ignore=[]):
             if name in ignore:
                 continue   # do not mask the genomes
             if node.parent.dup:
+                # print("parent dup")
                 continue
             for sister in node.get_sisters():
                 if sister.istip and name == get_name(sister.label):  # mask
@@ -50,13 +51,17 @@ def mask_monophyletic_tips(curroot, unamb_chrDICT, ignore=[]):
                     if ("_ptg" in node.label) & ("_ptg" in sister.label):
                         continue
                     if "_ptg" in sister.label:
+                        # print(f"from {node.label} found hifi pruning {node.label}")
                         node = node.prune()
                     elif "_ptg" in node.label:
+                        # print(f"from {node.label} found hifi pruning {sister.label}")
                         node = sister.prune()
                     else:
                         if unamb_chrDICT[node.label] > unamb_chrDICT[sister.label]:
+                            # print(f"from {node.label} I'm longer than {sister.label} pruning {sister.label}")
                             node = sister.prune()
                         else:
+                            # print(f"from {node.label} I'm shorter than {sister.label} pruning {node.label}")
                             node = node.prune()
                     if len(curroot.leaves()) >= 4:
                         if (
@@ -66,6 +71,7 @@ def mask_monophyletic_tips(curroot, unamb_chrDICT, ignore=[]):
                                 node != curroot
                                 and node.nchildren == 1):
                             node, curroot = remove_kink(node, curroot)
+                    # print(newick3.to_string(curroot)+";")
                     going = True
                     break
     return curroot
@@ -82,22 +88,32 @@ def mask_paraphyletic_tips(curroot, unamb_chrDICT, ignore=[]):
             if name in ignore:
                 continue  # do not mask the genomes
             parent = node.parent
-            if node == curroot or parent == curroot or parent is None or parent.dup:
+            if node == curroot or parent == curroot or parent is None:
                 continue  # no paraphyletic tips for the root
+            if parent.dup:
+                # print("parent dup")
+                continue
             for para in parent.get_sisters():
                 if para.istip and name == get_name(para.label):  # mask
                     if sample_id_from_name(node.label) == sample_id_from_name(para.label):
                         continue
+                    if para.parent.dup:  # don't prune a para tip where the MRCA of focal tip and 
+                        # para tip is a duplication node
+                        continue
                     if ("_ptg" in node.label) & ("_ptg" in para.label):
                         continue
                     if "_ptg" in para.label:
+                        # print(f"from {node.label} found hifi pruning {node.label}")
                         node = node.prune()
                     elif "_ptg" in node.label:
+                        # print(f"from {node.label} found hifi pruning {para.label}")
                         node = para.prune()
                     else:
                         if unamb_chrDICT[node.label] > unamb_chrDICT[para.label]:
+                            # print(f"from {node.label} I'm longer than {para.label} pruning {para.label}")
                             node = para.prune()
                         else:
+                            # print(f"from {node.label} I'm shorter than {para.label} pruning {node.label}")
                             node = node.prune()
                     if len(curroot.leaves()) >= 4:
                         if (
@@ -107,6 +123,7 @@ def mask_paraphyletic_tips(curroot, unamb_chrDICT, ignore=[]):
                                 node != curroot
                                 and node.nchildren == 1):
                             node, curroot = remove_kink(node, curroot)
+                    # print(newick3.to_string(curroot)+";")
                     going = True
                     break
     return curroot
@@ -134,6 +151,9 @@ def mask_paralogs(tree: Node, clnaln: str):
             continue
         if is_dup_sp_ovlp(node):
             node.dup = True
+            # node.label = "D"
+
+    # print(newick3.to_string(tree) + ";")
 
     chrDICT = {}  # key is seqid, value is number of unambiguous chrs
     for key, value in dict(parse_fasta(clnaln)).items():
@@ -142,6 +162,14 @@ def mask_paralogs(tree: Node, clnaln: str):
         chrDICT[key] = len(value)
 
     tree = mask_monophyletic_tips(tree, chrDICT)
+    # print(newick3.to_string(tree) + ";")
+    # for node in tree.iternodes(order=0):
+    #     if node == tree or node.parent == tree or node.istip:
+    #         continue
+    #     if is_dup_sp_ovlp(node):
+    #         node.dup = True
+    #         node.label = "D"
+    # print("done mono")
     tree = mask_paraphyletic_tips(tree, chrDICT)
     
     # for n in tree.iternodes(order=1):  # do postorder so that nested duplicates are masked first

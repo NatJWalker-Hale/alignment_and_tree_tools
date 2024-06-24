@@ -20,10 +20,14 @@ def sample_id_from_name(name: str) -> str:
 
 
 def is_dup_sp_ovlp(node: Node) -> bool:
-    ch1, ch2 = node.children
-    ch1_samps = {sample_id_from_name(n.label) for n in ch1.leaves()}
-    ch2_samps = {sample_id_from_name(n.label) for n in ch2.leaves()}
-    return bool(len(ch1_samps.intersection(ch2_samps)) > 0)
+    leaves = [n.label for n in node.leaves()]
+    samps = {sample_id_from_name(l) for l in leaves}
+    return len(samps) < len(leaves)
+
+    # ch1, ch2 = node.children
+    # ch1_samps = {sample_id_from_name(n.label) for n in ch1.leaves()}
+    # ch2_samps = {sample_id_from_name(n.label) for n in ch2.leaves()}
+    # return bool(len(ch1_samps.intersection(ch2_samps)) > 0)
 
 
 def is_monophyletic_sp(node: Node) -> bool:

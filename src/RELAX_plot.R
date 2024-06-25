@@ -1,9 +1,9 @@
-setwd("Dropbox/cary_projects/anthocyanin_block/20221101_boas_analysis/")
+setwd("~/Downloads/")
 library(scales)
 library(ggplot2)
 
-df <- read.csv("20230912_RELAX_alternative_results.csv", header = T,
-               stringsAsFactors = T)
+df <- read.table("tmp.tsv", header = T,
+               stringsAsFactors = T, na.strings = "null")
 
 df$gene <- factor(df$gene,
                   levels = c("CHS", "CHI", "F3-H", "F3H", "F3-5-H", "FNS2",
@@ -51,15 +51,15 @@ for (i in levels(df$gene)) {
               "P = ", round(subdf$pval, digits = 3),
               "AIC-c = ", round(subdf$aicc, digits = 3)),
         side = 3, line = .2, adj = 0, cex = 0.7)
-  if (max(subdf.plot$w) < 10) {
+  if (max(subdf.plot$w[!is.na(subdf.plot$w)]) < 10) {
     labvals <- c(0, 0.1, 0.5, 1, 2, 5, 10)
-  } else if (max(subdf.plot$w) < 100) {
+  } else if (max(subdf.plot$w[!is.na(subdf.plot$w)]) < 100) {
     labvals <- c(0, 0.5, 1, 2, 5, 10, 100)
-  } else if (max(subdf.plot$w) < 1000) {
+  } else if (max(subdf.plot$w[!is.na(subdf.plot$w)]) < 1000) {
     labvals <- c(0, 1, 10, 100, 1000)
-  } else if (max(subdf.plot$w) < 10000) {
+  } else if (max(subdf.plot$w[!is.na(subdf.plot$w)]) < 10000) {
     labvals <- c(0, 1, 10, 100, 1000, 10000)
-  } else if (max(subdf.plot$w) < 100000) {
+  } else if (max(subdf.plot$w[!is.na(subdf.plot$w)]) < 100000) {
     labvals <- c(0, 1, 10, 100, 1000, 10000, 100000)
   }
   axis(1, at = trans$transform(seq(0, 1, 0.1)), labels = F)

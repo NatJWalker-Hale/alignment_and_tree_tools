@@ -64,6 +64,7 @@ def parse_phylip_str(phy_str: str):
             seq += line.strip()
     yield header, seq
 
+
 def get_phylip_str(seq_dict: dict[str: str]) -> str:
     """
     writes a PHYLIP-formatted string from an aligned sequence dictionary {header: sequence}. First
@@ -118,6 +119,34 @@ def parse_fasta_str(fa_str: str):
         sequence += line
     if name and sequence:
         yield name, sequence.upper()
+
+
+def parse_partition_file(path: str):
+    """
+    given a path tries to parse a partition file. Returns an iterator yielding a
+    (name, (start, end)) tuple
+    """
+    with open(path, "r", encoding="utf-8") as inf:
+        for line in inf:
+            line = line.strip().split(" ")
+            name = line[1]
+            sites = line[-1]
+            start, end = [int(x) for x in sites.split("\\")[0].split("-")]
+            yield name, (start, end)
+
+
+def col_dict_to_seq_dict(col_dict: dict[int: dict[str: str]]) -> dict[str: str]:
+    """
+    function to return column dictionary to sequence dictionary
+    """
+    out = {}
+    for col in col_dict.values():
+        for header, char in col.items():
+            try:
+                out[header] += char
+            except KeyError:
+                out[header] = char
+    return out
 
 
 def get_fasta_str(seq_dict: dict[str: str]) -> str:

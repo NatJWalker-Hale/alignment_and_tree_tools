@@ -2,7 +2,7 @@
 
 
 """
-converts FASTA-formatted alignments to non-interleaved phylip
+converts FASTA-formatted alignments torelaxed non-interleaved phylip
 """
 
 

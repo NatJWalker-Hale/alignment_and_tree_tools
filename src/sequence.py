@@ -76,7 +76,7 @@ def get_phylip_str(seq_dict: dict[str: str]) -> str:
     out = ""
     out += f" {nseq} {seql}\n"
     for header, seq in seq_dict.items():
-        out += f"{header}\t{seq}\n"
+        out += f"{header}    {seq}\n"
     return out
 
 

@@ -44,4 +44,5 @@ if __name__ == "__main__":
 
     print("pos\tn_eff")
     for k, v in n_eff_dict.items():
+        # 1-indexed
         print(str(k + 1) + "\t" + str(v))

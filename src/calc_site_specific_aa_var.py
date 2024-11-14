@@ -77,15 +77,9 @@ if __name__ == "__main__":
         else:
             out_dict[k] = calc_scaled_entropy(v)
 
-<<<<<<< HEAD
     if args.neff:
         print("pos\tn_eff")
     else:
         print("pos\tnorm_ent")
     for k, v in out_dict.items():
-=======
-    print("pos\tn_eff")
-    for k, v in n_eff_dict.items():
-        # 1-indexed
->>>>>>> 4b95d4df00b2df7c977bd7f8a661a7eca9b8711a
         print(str(k + 1) + "\t" + str(v))

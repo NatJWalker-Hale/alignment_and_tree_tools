@@ -6,6 +6,7 @@ splits a supermatrix into individual constituent FASTAs based on a RAxML-style p
 """
 
 
+import re
 import sys
 import argparse
 import sequence as sq
@@ -32,9 +33,13 @@ def unconcat(# col_dict: dict,
         end = sites[1]
         with open(f"{name}.fa", "w", encoding="utf-8") as outfa:
             for header, seq in seq_dict.items():
+                subseq = seq[start:end]
+                if set(subseq) == {"?"}:
+                    continue
+                subseq = subseq.replace("?", "N")  # standardise ambiguity
+                subseq = subseq.replace("-", "")  # delete gaps
                 outfa.write(f">{header}\n")
-                outfa.write(f"{seq[start:end]}\n")
-
+                outfa.write(f"{subseq}\n")
 
 
 if __name__ == "__main__":

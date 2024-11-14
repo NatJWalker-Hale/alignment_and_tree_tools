@@ -32,7 +32,7 @@ def get_columns(seq_dict: dict) -> dict:
     return col_dict
 
 
-def calc_col_prop(col_dict: dict, atleast = 0) -> dict:
+def calc_col_prop(col_dict: dict, atleast = 0.) -> dict:
     """takes a column dictionary from get_columns and returns a dictionary
     of column amino acid state frequencies. Denominator does not count gaps."""
     col_prop_dict = {}
@@ -92,6 +92,32 @@ def calc_jsd_scipy(col_prop_dict1: dict, col_prop_dict2: dict) -> dict:
     return dist_dict
 
 
+def calc_site_specific_divergence_aa_n_aln(alns: dict) -> dict:
+    """
+    main
+    """
+    alns_cols = {}
+    for fname, aln in alns.items():
+        alns_cols[fname] = get_columns(aln)
+
+    cols_props = {}
+    for pos, col in alns_cols.items():
+        cols_props[pos] = calc_col_prop(col, atleast=args.atleastp)
+
+    cols = []
+    for _, v in cols_props.items():
+        cols.append(set(k for k in v.keys()))
+    in_all = sorted(list(set.intersection(*cols)))
+
+    distances = {}
+
+    for k in in_all:
+        props_list = [x[k] for x in list(cols_props.values())]
+        distances[k] = calc_jsd(props_list)
+
+    return distances
+
+
 if __name__ == "__main__":
     if len(sys.argv[1:]) == 0:
         sys.argv.append("-h")
@@ -115,29 +141,12 @@ if __name__ == "__main__":
                 print("alignments are not of the same length!")
                 sys.exit()
 
-    alns_cols = {}
-    for k, v in alns.items():
-        alns_cols[k] = get_columns(v)
-
-    cols_props = {}
-    for k, v in alns_cols.items():
-        cols_props[k] = calc_col_prop(v, atleast=args.atleastp)
-
-    cols = []
-    for _, v in cols_props.items():
-        cols.append(set(k for k in v.keys()))
-    inAll = sorted(list(set.intersection(*cols)))
-
-    distances = {}
-
-    for k in inAll:
-        props_list = [x[k] for x in list(cols_props.values())]
-        distances[k] = calc_jsd(props_list)
+    out = calc_site_specific_divergence_aa_n_aln(alns)
 
     # for k, v in colsProps[0].items():
     #     propsList = [x[k] for x in [v for v in colsProps.values()]]
     #     distances[k] = jsd(propsList)
 
     print("pos\tjsd")
-    for k, v in distances.items():
-        print(str(k + 1) + "\t" + str(v))
+    for col, dist in out.items():
+        print(str(col + 1) + "\t" + str(dist))

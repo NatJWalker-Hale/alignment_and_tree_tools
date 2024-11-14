@@ -42,11 +42,13 @@ def calc_col_prop(col_dict: dict, atleast = 0.) -> dict:
         tot = sum(counts.values())
         if atleast > 0:
             if tot < len(col) * atleast:
-                sys.stderr.write(f"skipping column {pos} with insufficient data\n")
+                sys.stderr.write(f"skipping column {pos+1} with insufficient data\n")
+                # 1-indexed error message
                 continue
         else:
             if tot == 0:
-                sys.stderr.write(f"skipping empty column {pos}\n")
+                sys.stderr.write(f"skipping empty column {pos+1}\n")
+                # 1-indexed error message
                 continue
         props = [counts[char] / tot for char in aa]
         col_prop_dict[pos] = props

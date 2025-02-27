@@ -16,15 +16,22 @@ def get_names_to_exclude(ignoref):
 
 def sample_id_from_name(name: str) -> str:
     try:
-        sp, sid = name.split("_")
-        return sp, sid
+        _, sid = name.split("_")
+        return sid
     except ValueError:
         return name
 
 
+def species_from_name(name: str) -> str:
+    try:
+        sp, _ = name.split("_")
+        return sp
+    except ValueError:
+        return name
+
 def is_dup_sp_ovlp(node: Node) -> bool:
     leaves = [n.label for n in node.leaves()]
-    samps = {sample_id_from_name(l)[1] for l in leaves}
+    samps = {sample_id_from_name(l) for l in leaves}
     return len(samps) < len(leaves)
 
     # ch1, ch2 = node.children
@@ -34,7 +41,7 @@ def is_dup_sp_ovlp(node: Node) -> bool:
 
 
 def is_monophyletic_sp(node: Node) -> bool:
-    sp = [sample_id_from_name(get_name(n.label))[0] for n in node.leaves()]
+    sp = [species_from_name(get_name(n.label)) for n in node.leaves()]
     return len(set(sp)) == 1
 
 
@@ -46,22 +53,27 @@ def mask_monophyletic_tips(curroot, unamb_chrDICT, ignore=[]):
             if not node.istip:
                 continue   # only look at tips
             name = get_name(node.label)
+            sp = species_from_name(name)
             if name in ignore:
                 continue   # do not mask the genomes
             if node.parent.dup:
                 # print("parent dup")
                 continue
             for sister in node.get_sisters():
-                if sister.istip and name == get_name(sister.label):  # mask
-                    if sample_id_from_name(node.label)[1] == sample_id_from_name(sister.label)[1]:
+                if sister.istip and sp == species_from_name(get_name(sister.label)):  # mask
+                    if sample_id_from_name(node.label) == sample_id_from_name(sister.label):
+                        # this is dup
                         continue
                     if ((any(x in node.label for x in ["PH01S", "PH02S"])) &
                         (any(x in sister.label for x in ["PH01S", "PH02S"]))):
+                        # two sequences from HiFi genome, keep
                         continue
-                    if sister.label in ["PH01S", "PH02S"]:
+                    if any(x in sister.label for x in ["PH01S", "PH02S"]):
+                        # keep sister
                         # print(f"from {node.label} found hifi pruning {node.label}")
                         node = node.prune()
-                    elif node.label in ["PH01S", "PH02S"]:
+                    elif any(x in node.label for x in ["PH01S", "PH02S"]):
+                        # keep self
                         # print(f"from {node.label} found hifi pruning {sister.label}")
                         node = sister.prune()
                     else:
@@ -93,6 +105,7 @@ def mask_paraphyletic_tips(curroot, unamb_chrDICT, ignore=[]):
             if not node.istip:
                 continue  # only look at tips
             name = get_name(node.label)
+            sp = species_from_name(name)
             if name in ignore:
                 continue  # do not mask the genomes
             parent = node.parent
@@ -102,18 +115,21 @@ def mask_paraphyletic_tips(curroot, unamb_chrDICT, ignore=[]):
                 # print("parent dup")
                 continue
             for para in parent.get_sisters():
-                if para.istip and name == get_name(para.label):  # mask
+                if para.istip and sp == species_from_name(get_name(para.label)):  # mask
                     if sample_id_from_name(node.label) == sample_id_from_name(para.label):
+                        # this is dup
                         continue
                     if para.parent.dup:  # don't prune a para tip where the MRCA of focal tip and 
                         # para tip is a duplication node
                         continue
-                    if ("_ptg" in node.label) & ("_ptg" in para.label):
+                    if ((any(x in node.label for x in ["PH01S", "PH02S"])) &
+                        (any(x in para.label for x in ["PH01S", "PH02S"]))):
+                        # two sequences from HiFi genome, keep
                         continue
-                    if "_ptg" in para.label:
+                    if any(x in para.label for x in ["PH01S", "PH02S"]):
                         # print(f"from {node.label} found hifi pruning {node.label}")
                         node = node.prune()
-                    elif "_ptg" in node.label:
+                    elif any(x in node.label for x in ["PH01S", "PH02S"]):
                         # print(f"from {node.label} found hifi pruning {para.label}")
                         node = para.prune()
                     else:

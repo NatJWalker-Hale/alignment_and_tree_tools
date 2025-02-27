@@ -15,13 +15,16 @@ def get_names_to_exclude(ignoref):
 
 
 def sample_id_from_name(name: str) -> str:
-    id = name.split("_")[1]
-    return id
+    try:
+        sp, sid = name.split("_")
+        return sp, sid
+    except ValueError:
+        return name
 
 
 def is_dup_sp_ovlp(node: Node) -> bool:
     leaves = [n.label for n in node.leaves()]
-    samps = {sample_id_from_name(l) for l in leaves}
+    samps = {sample_id_from_name(l)[1] for l in leaves}
     return len(samps) < len(leaves)
 
     # ch1, ch2 = node.children
@@ -31,7 +34,7 @@ def is_dup_sp_ovlp(node: Node) -> bool:
 
 
 def is_monophyletic_sp(node: Node) -> bool:
-    sp = [get_name(n.label) for n in node.leaves()]
+    sp = [sample_id_from_name(get_name(n.label))[0] for n in node.leaves()]
     return len(set(sp)) == 1
 
 
@@ -50,14 +53,15 @@ def mask_monophyletic_tips(curroot, unamb_chrDICT, ignore=[]):
                 continue
             for sister in node.get_sisters():
                 if sister.istip and name == get_name(sister.label):  # mask
-                    if sample_id_from_name(node.label) == sample_id_from_name(sister.label):
+                    if sample_id_from_name(node.label)[1] == sample_id_from_name(sister.label)[1]:
                         continue
-                    if ("_ptg" in node.label) & ("_ptg" in sister.label):
+                    if ((any(x in node.label for x in ["PH01S", "PH02S"])) &
+                        (any(x in sister.label for x in ["PH01S", "PH02S"]))):
                         continue
-                    if "_ptg" in sister.label:
+                    if sister.label in ["PH01S", "PH02S"]:
                         # print(f"from {node.label} found hifi pruning {node.label}")
                         node = node.prune()
-                    elif "_ptg" in node.label:
+                    elif node.label in ["PH01S", "PH02S"]:
                         # print(f"from {node.label} found hifi pruning {sister.label}")
                         node = sister.prune()
                     else:

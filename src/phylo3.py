@@ -207,9 +207,9 @@ class Node:
                         del d[oldnode]; del d[newnode]
                     if not newnode.parent:
                         break
-            
+
         return d
-        
+
     def get_sisters(self):
         if self.parent == None:
             return
@@ -219,6 +219,31 @@ class Node:
             if i != self:
                 sisters.append(i)
         return sisters
+
+    # NWH addition 20250227
+    def is_monophyletic(self, sep: str=None, spl: str=None, query: str=None):
+        """
+        returns if a node is monophyletic for a given string in the tip labels.
+        sep controls if labels should first be split from sequence IDs.
+        spl controls if labels should further be split into multiple elements, in which case the
+        function assumes the first is being tested.
+        query will additionally return if it is monophyletic for a particular value
+
+        e.g. with tip labels formatted species_sample@sequence, sep="@" will isolate species_sample
+        and spl="_" will test the monophyly of species.
+        if species = "A" and query = "A", it will return true only if all leaves descending the node
+        are from species A
+        """
+        if sep is not None:
+            names = [n.label.split(sep)[0] for n in self.leaves()]
+            if spl is not None:
+                names = [x.split(spl)[0] for x in names]
+        else:
+            names = [n.label for n in self.leaves()]
+
+        if query is not None:
+            return (len(set(names)) == 1) & (names[0] == query)
+        return len(set(names)) == 1
 
 def node2size(node, d=None):
     "map node and descendants to number of descendant tips"

@@ -35,23 +35,24 @@ if __name__ == "__main__":
     sing_lab = deepcopy(curroot)
 
     for n in curroot.iternodes(order=0):  # first pass, all foreground, rest background
-        if n.parent is None:  # skip root
-            continue
-        try:
-            name = n.label.split("@")[0]
-        except AttributeError:
-            name = ""
         if args.type == "hyphy":
-            if name == args.flag:
-                n.label += "{Test}"
-            else:
-                if n.istip:
-                    n.label += "{Reference}"
+            if n.istip:
+                name = n.label.split("@")[0].split("_")[0]
+                if name == args.flag:
+                    n.label += "{Test}"
                 else:
-                    n.label = "{Reference}"
+                    n.label += "{Reference}"
+            elif n.is_monophyletic(sep="@", spl="_", query=args.flag):
+                n.label = "{Test}"
+            else:
+                n.label = "{Reference}"
         else:
-            if name == args.flag:
-                n.label += "#1"
+            if n.istip:
+                name = n.label.split("@")[0].split("_")[0]
+                if name == args.flag:
+                    n.label += "#1"
+            if n.is_monophyletic(sep="@", spl="_", query=args.flag):
+                n.label = "#1"
     with open(args.tree + ".all.label", "w", encoding="utf-8") as outf:
         outf.write(newick3.to_string(curroot) + ";\n") 
     
@@ -59,20 +60,30 @@ if __name__ == "__main__":
     for n in sing_lab.iternodes(order=0):  # second pass, label one by one, write, reset label
         if n.parent is None:  # skip root
             continue
-        try:
-            name = n.label.split("@")[0]
-        except AttributeError:
-            name = ""
-        if name == args.flag:
+        if n.istip:
+            name = n.label.split("@")[0].split("_")[0]
+            if name == args.flag:
+                if args.type == "hyphy":
+                    n.label += "{Test}"
+                else:
+                    n.label += "#1"
+                with open(f"{args.tree}.{count}.label", "w", encoding="utf-8") as outf:
+                    outf.write(newick3.to_string(sing_lab) + ";\n")
+                if args.type == "hyphy":
+                    n.label = n.label[:-6]
+                else:
+                    n.label = n.label[:-2]
+                count +=1
+        elif n.is_monophyletic(sep="@", spl="_", query=args.flag):
             if args.type == "hyphy":
-                n.label += "{Test}"
+                n.label = "{Test}"
             else:
-                n.label += "#1"
+                n.label = "#1"
             with open(f"{args.tree}.{count}.label", "w", encoding="utf-8") as outf:
-                outf.write(newick3.to_string(sing_lab) + ";\n")
+                    outf.write(newick3.to_string(sing_lab) + ";\n")
             if args.type == "hyphy":
-                n.label = n.label[:-6]
+                n.label = ""
             else:
-                n.label = n.label[:-2]
+                n.label = ""
             count +=1
 

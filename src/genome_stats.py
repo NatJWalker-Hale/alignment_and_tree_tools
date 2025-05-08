@@ -18,6 +18,11 @@ class Assembly:
         self.Cs = 0
         self.Gs = 0
         self.Ts = 0
+        self.a_s = 0
+        self.c_s = 0
+        self.g_s = 0
+        self.t_s = 0
+        self.masked = 0
         self.N50 = 0
         self.N90 = 0
         self.L50 = 0
@@ -30,12 +35,17 @@ class Assembly:
         print(f"Total length (without Ns): {self.length - self.Ns}")
         print(f"Average length: {self.length / self.n_contigs:.2f}")
         print(f"Shortest: {self.lengths[0]} Longest: {self.lengths[-1]}")
-        print(f"As: {self.As} {self.As / self.length:.2%}")
-        print(f"Cs: {self.Cs} {self.Cs / self.length:.2%}")
-        print(f"Gs: {self.Gs} {self.Gs / self.length:.2%}")
-        print(f"Ts: {self.Ts} {self.Ts / self.length:.2%}")
+        print(f"A: {self.As} {self.As / self.length:.2%}")
+        print(f"C: {self.Cs} {self.Cs / self.length:.2%}")
+        print(f"G: {self.Gs} {self.Gs / self.length:.2%}")
+        print(f"T: {self.Ts} {self.Ts / self.length:.2%}")
+        print(f"a: {self.a_s} {self.a_s / self.length:.2%}")
+        print(f"c: {self.c_s} {self.c_s / self.length:.2%}")
+        print(f"g: {self.g_s} {self.g_s / self.length:.2%}")
+        print(f"t: {self.t_s} {self.t_s / self.length:.2%}")
+        print(f"Masked: {self.masked} {self.masked / self.length:.2%}")
         print(f"Ns: {self.Ns} {self.Ns / self.length:.2%}")
-        print(f"GC: {(self.Gs + self.Cs) / self.length:.2%}")
+        print(f"GC: {(self.Gs + self.g_s + self.Cs + self.c_s) / self.length:.2%}")
         print(f"N50: {self.N50} L50: {self.L50}")
         print(f"N90: {self.N90} L90: {self.L90}")
 
@@ -64,12 +74,17 @@ if __name__ == "__main__":
                 gen.n_contigs += 1
             else:
                 length += len(line)
-                counts = Counter(line.upper())
+                counts = Counter(line)
                 gen.Ns += counts["N"]
+                gen.Ns += counts["n"]
                 gen.As += counts["A"]
                 gen.Cs += counts["C"]
                 gen.Gs += counts["G"]
                 gen.Ts += counts["T"]
+                gen.a_s += counts["a"]
+                gen.c_s += counts["c"]
+                gen.g_s += counts["g"]
+                gen.t_s += counts["t"]
             line = f.readline().strip()
         gen.lengths.append(length) # write lengths of final contig
         gen.length += length
@@ -96,5 +111,6 @@ if __name__ == "__main__":
     gen.N90 = gen.lengths[idx[0][0]]
     gen.L90 = gen.n_contigs - idx[0][0]
 
+    gen.masked = sum([gen.a_s, gen.c_s, gen.g_s, gen.t_s])
 
     gen.print_stats()

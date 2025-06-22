@@ -51,7 +51,7 @@ if __name__ == "__main__":
                 name = n.label.split("@")[0].split("_")[0]
                 if name == args.flag:
                     n.label += "#1"
-            if n.is_monophyletic(sep="@", spl="_", query=args.flag):
+            elif n.is_monophyletic(sep="@", spl="_", query=args.flag):
                 n.label = "#1"
     with open(args.tree + ".all.label", "w", encoding="utf-8") as outf:
         outf.write(newick3.to_string(curroot) + ";\n") 

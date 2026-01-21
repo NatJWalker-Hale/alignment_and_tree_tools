@@ -59,8 +59,8 @@ if __name__ == "__main__":
         sys.exit()
     if args.end:
         out = (target[:start - 1] +
-                transform(target[start - 1:args.end], r = args.rev) +
-                target[args.end:])
+               transform(target[start - 1:args.end], r = args.rev) +
+               target[args.end:])
     else:
         out = (target[:start - 1] + 
                 transform(target[start - 1:], r = args.rev))

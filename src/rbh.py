@@ -62,9 +62,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-rbh", "--reciprocal_best_hits", help="query-reference and \
-                        reference-query blast results in outfmt6", type=str, nargs=2)
+                        reference-query blast results in outfmt6", type=str, nargs=2,
+                        metavar=("query-ref", "ref-query"))
     group.add_argument("-bh", "--best_hits", help="query-reference blast results in outfmt6",
-                       type=str)
+                       type=str, metavar="query-ref")
     args = parser.parse_args()
 
     if args.reciprocal_best_hits is not None:

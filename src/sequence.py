@@ -329,7 +329,8 @@ def insert_gaps_by_seq(ref:dict, query:dict):
     return out
 
 
-if __name__ == "__main__":
-    seqs = dict(parse_fasta("DODAa_combined_no_og_strict_for_synth.cds.fa.nostop.name.noF.best.fas.trans"))
-    site_freqs = get_site_specific_frequencies(seqs)
-    print(site_freqs)
+# if __name__ == "__main__":
+#     seqs = dict(
+# parse_fasta("DODAa_combined_no_og_strict_for_synth.cds.fa.nostop.name.noF.best.fas.trans"))
+#     #site_freqs = get_site_specific_frequencies(seqs)
+#     print(site_freqs)

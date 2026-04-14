@@ -55,6 +55,9 @@ class Node:
 
     def leaves(self):
         return [ n for n in self.iternodes() if n.istip ]
+    
+    def lvsnms(self):
+        return [ n.label for n in self.iternodes() if n.istip ]
 
     def iternodes(self, order=PREORDER, v=None):
         """
@@ -244,6 +247,16 @@ class Node:
         if query is not None:
             return (len(set(names)) == 1) & (names[0] == query)
         return len(set(names)) == 1
+    
+    # NWH addition 20260414
+    def n_int_branch(self):
+        nodes = self.iternodes(order=0)
+        next(nodes)  # skip self
+        ints = 0
+        for c in nodes:
+            if not c.istip:
+                ints += 1
+        return ints
 
 def node2size(node, d=None):
     "map node and descendants to number of descendant tips"
@@ -337,4 +350,25 @@ def getMRCATraverseFromPath(path1, curn2):
                 break
         parent = parent.parent
     return mrca   
-    
+
+# NWH additions 20260414 
+def get_gene_tree_splits(node):
+    """
+    Yield all non-trivial bipartitions from an unrooted tree.
+    Each bipartition is a list of two sets of taxon names.
+    """
+    all_taxa = set(node.lvsnms())
+    for child in node.children:
+        yield from _get_splits_recursive(child, all_taxa)
+
+def _get_splits_recursive(node, all_taxa):
+    if node.istip:
+        return
+    below = set(node.lvsnms())
+    above = all_taxa - below
+    if len(below) > 1 and len(above) > 1:
+        yield [below, above]
+    for child in node.children:
+        yield from _get_splits_recursive(child, all_taxa)
+
+

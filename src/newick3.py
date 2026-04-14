@@ -1,5 +1,6 @@
 import string, sys
 from shlex import shlex
+import phylo3
 from phylo3 import Node
 from io import StringIO,BytesIO
 
@@ -155,14 +156,23 @@ def parse_from_file(filename):
     file.close()
     return tree
 
+def read_tree_file_iter(filename):
+    info = open(filename, "r")
+    for i in info:
+        if len(i) > 2:
+            yield parse(i.strip())
+    info.close()
+
 if __name__ == "__main__":
     #import ascii
-    s = "(a:3,(b:1e-05,c:1.3)int:5)root;"
-    s = "(Nematostella_vectensis@146487:0.28570255971561625552,((Bargmannia@124461:0.11671371999896994198,(Nanomia@82407:0.02229037752330314398,(Frillagalma@103872:0.03352004060787890788,Agalma_elegans@38387:0.00723798292127085779):0.01418728724518653582):0.07522769713546764714):0.10356415483616157602,Clytia_hemisphaerica@165314:0.07583460439008869736):0.06930854841339750827,Hydra_magnipapillata@6480:0.08755522366843263016):0.0;"
+    #s = "(a:3,(b:1e-05,c:1.3)int:5)root;"
+    #s = "(Nematostella_vectensis@146487:0.28570255971561625552,((Bargmannia@124461:0.11671371999896994198,(Nanomia@82407:0.02229037752330314398,(Frillagalma@103872:0.03352004060787890788,Agalma_elegans@38387:0.00723798292127085779):0.01418728724518653582):0.07522769713546764714):0.10356415483616157602,Clytia_hemisphaerica@165314:0.07583460439008869736):0.06930854841339750827,Hydra_magnipapillata@6480:0.08755522366843263016):0.0;"
     #s = "(a,b,c,d,e,f,g);"
+    s = "(((a,b),c),d,e);"
     n = parse(s)
-    print
     #print ascii.render(n)
     print(s)
     print(to_string(n))
     #print n.next.back.label
+    for split in phylo3.get_gene_tree_splits(n):
+        print(split)

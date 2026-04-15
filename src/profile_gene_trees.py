@@ -148,6 +148,34 @@ def conflicts(bp2_side: set, bp1_side: dict) -> bool:
     return False
 
 
+def quartet_concordance(partitions: list[list[str]], gene_taxa: set, gene_splits: list[set]):
+    parts = [set(p) & gene_taxa for p in partitions]
+    
+    # skip if not decisive (any partition unrepresented)
+    if any(len(p) == 0 for p in parts):
+        return None
+
+    A, B, C, D = parts
+    focal = 0
+    alt1 = 0
+    alt2 = 0
+
+    for below, above in gene_splits:
+        a0, a1 = len(A & below), len(A & above)
+        b0, b1 = len(B & below), len(B & above)
+        c0, c1 = len(C & below), len(C & above)
+        d0, d1 = len(D & below), len(D & above)
+
+        focal += a0 * b0 * c1 * d1 + a1 * b1 * c0 * d0
+        alt1  += a0 * c0 * b1 * d1 + a1 * c1 * b0 * d0
+        alt2  += a0 * d0 * b1 * c1 + a1 * d1 * b0 * c0
+
+    total = len(A) * len(B) * len(C) * len(D)
+    unresolved = total - focal - alt1 - alt2
+
+    return focal, alt1, alt2, unresolved
+
+
 def profile_gene_trees():
     """main function"""
     parser = argparse.ArgumentParser(description="Profile gene trees for decisive branches")
@@ -169,14 +197,14 @@ def profile_gene_trees():
 
     for tree_file in args.gene_trees:
         gene_tree = newick3.parse_from_file(tree_file)
+        gene_taxa = set(gene_tree.lvsnms())
+        gene_splits = list(phylo3.get_gene_tree_splits(gene_tree))
 
         if args.strict:
             if not all(is_decisive(bt, gene_tree) for bt, _ in constraints):
                 for con in range(len(constraints)):
                     print(f"{tree_file}\t{con}\tundecisive")
                 continue
-
-        gene_splits = list(phylo3.get_gene_tree_splits(gene_tree))
 
         for con, (branch_tree, bp1_side) in enumerate(constraints):
             if not args.strict and not is_decisive(branch_tree, gene_tree):

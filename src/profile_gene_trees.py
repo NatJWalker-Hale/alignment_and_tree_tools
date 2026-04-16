@@ -9,6 +9,8 @@ from phylo3 import Node
 
 
 """
+Written by NWH with assistance from Claude Opus 4.6
+
 Take two tree node objects: one an (unrooted) tree corresponding to a single branch with
 two tips/clades on either side, and the other a gene tree. Returns true if each of the sets 
 at the end of each of the branches is non-empty (see Lanfear & Hahn).
@@ -26,7 +28,9 @@ clades or tips. In the case of tips, the input constraint tree is (1 internal br
     |---A
 |---|
 |   |---B
+|
 |---C
+|
 |---D
 
 If instead A, B, C and D represent clades that can be decisive based on the presence of any one
@@ -41,9 +45,11 @@ of the taxa in the clades, the input constraint tree is (5 internal branches):
 |   |   |---B1
 |   |---|
 |       |---B2
+|
 |   |---C1 
 |---|
 |   |---C2
+|
 |   |---D1
 |---|
     |---D2
@@ -56,6 +62,9 @@ If a given gene tree is decisive for the constraint, then all we need to do is c
 existence of the split defined by the focal branch - we do not require e.g. that the clades are
 monophyletic in the gene trees. That is to say, the decisiveness check determines if they could
 theoretically reproduce the exact relationships in the constraint, but we do not require it to.
+
+There is also a quartet mode to get around the problem of incidental tips causing many gene trees
+to be entirely non-concordant.
 """
 
 # def is_decisive(branch: Node, tree: Node) -> bool:
@@ -171,9 +180,8 @@ def quartet_concordance(partitions: list[list[str]], gene_taxa: set, gene_splits
         alt2  += a0 * d0 * b1 * c1 + a1 * d1 * b0 * c0
 
     total = len(A) * len(B) * len(C) * len(D)
-    unresolved = total - focal - alt1 - alt2
 
-    return focal, alt1, alt2, unresolved
+    return focal, alt1, alt2
 
 
 def profile_gene_trees():
@@ -183,6 +191,9 @@ def profile_gene_trees():
     parser.add_argument("gene_trees", nargs="+", help="input gene tree file(s)")
     parser.add_argument("-s", "--strict", action="store_true",
                         help="Require input trees to be decisive for all constraints")
+    parser.add_argument("-q", "--quartets", action="store_true",
+                        help="Use exhaustive quartet sampling instead of bipartitions per gene \
+                        tree")
     args = parser.parse_args(sys.argv[1:] or ["--help"])
 
     branch_trees = [t for t in newick3.read_tree_file_iter(args.branch_trees)]
@@ -194,6 +205,7 @@ def profile_gene_trees():
         bp1_side = {taxon: 0 for taxon in bp1[0]}
         bp1_side.update({taxon: 1 for taxon in bp1[1]})
         constraints.append((branch_tree, bp1_side))
+    print(constraints)
 
     for tree_file in args.gene_trees:
         gene_tree = newick3.parse_from_file(tree_file)
@@ -205,6 +217,10 @@ def profile_gene_trees():
                 for con in range(len(constraints)):
                     print(f"{tree_file}\t{con}\tundecisive")
                 continue
+            
+        # if args.quartets:
+        #     for con, (branch_tree, bp1_side) in enumerate(constraints):
+        #     q1, q2, q3 = 
 
         for con, (branch_tree, bp1_side) in enumerate(constraints):
             if not args.strict and not is_decisive(branch_tree, gene_tree):

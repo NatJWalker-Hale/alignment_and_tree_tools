@@ -157,31 +157,34 @@ def conflicts(bp2_side: set, bp1_side: dict) -> bool:
     return False
 
 
-def quartet_concordance(partitions: list[list[str]], gene_taxa: set, gene_splits: list[set]):
-    parts = [set(p) & gene_taxa for p in partitions]
+# def quartet_concordance(partitions: list[list[str]], gene_taxa: set, gene_splits: list[set]):
+#     parts = [set(p) & gene_taxa for p in partitions]
+#     # print(parts)
     
-    # skip if not decisive (any partition unrepresented)
-    if any(len(p) == 0 for p in parts):
-        return None
+#     # skip if not decisive (any partition unrepresented)
+#     if any(len(p) == 0 for p in parts):
+#         return None
 
-    A, B, C, D = parts
-    focal = 0
-    alt1 = 0
-    alt2 = 0
+#     A, B, C, D = parts
+#     focal = 0
+#     alt1 = 0
+#     alt2 = 0
 
-    for below, above in gene_splits:
-        a0, a1 = len(A & below), len(A & above)
-        b0, b1 = len(B & below), len(B & above)
-        c0, c1 = len(C & below), len(C & above)
-        d0, d1 = len(D & below), len(D & above)
+#     # print(gene_splits)
 
-        focal += a0 * b0 * c1 * d1 + a1 * b1 * c0 * d0
-        alt1  += a0 * c0 * b1 * d1 + a1 * c1 * b0 * d0
-        alt2  += a0 * d0 * b1 * c1 + a1 * d1 * b0 * c0
+#     for below, above in gene_splits:
+#         a0, a1 = len(A & below), len(A & above)
+#         b0, b1 = len(B & below), len(B & above)
+#         c0, c1 = len(C & below), len(C & above)
+#         d0, d1 = len(D & below), len(D & above)
 
-    total = len(A) * len(B) * len(C) * len(D)
+#         focal += a0 * b0 * c1 * d1 + a1 * b1 * c0 * d0
+#         alt1  += a0 * c0 * b1 * d1 + a1 * c1 * b0 * d0
+#         alt2  += a0 * d0 * b1 * c1 + a1 * d1 * b0 * c0
 
-    return focal, alt1, alt2
+#     total = len(A) * len(B) * len(C) * len(D)
+
+#     return focal / total, alt1 / total, alt2 / total
 
 
 def profile_gene_trees():
@@ -201,16 +204,18 @@ def profile_gene_trees():
     # precompute splits and lookups once
     constraints = []
     for branch_tree in branch_trees:
+        # print(newick3.to_string(branch_tree))
         bp1 = get_split(branch_tree)
         bp1_side = {taxon: 0 for taxon in bp1[0]}
         bp1_side.update({taxon: 1 for taxon in bp1[1]})
         constraints.append((branch_tree, bp1_side))
-    print(constraints)
+    # print(constraints)
 
     for tree_file in args.gene_trees:
         gene_tree = newick3.parse_from_file(tree_file)
         gene_taxa = set(gene_tree.lvsnms())
         gene_splits = list(phylo3.get_gene_tree_splits(gene_tree))
+        # print(gene_splits)
 
         if args.strict:
             if not all(is_decisive(bt, gene_tree) for bt, _ in constraints):
@@ -220,7 +225,11 @@ def profile_gene_trees():
             
         # if args.quartets:
         #     for con, (branch_tree, bp1_side) in enumerate(constraints):
-        #     q1, q2, q3 = 
+        #         q1, q2, q3 = quartet_concordance(_get_partitions(branch_tree),
+        #                                         gene_taxa,
+        #                                         gene_splits)
+        #         print(f"{tree_file}\t{con}\t{q1},{q2},{q3}")
+        #     break 
 
         for con, (branch_tree, bp1_side) in enumerate(constraints):
             if not args.strict and not is_decisive(branch_tree, gene_tree):

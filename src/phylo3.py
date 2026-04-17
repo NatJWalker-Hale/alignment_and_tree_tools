@@ -257,6 +257,35 @@ class Node:
             if not c.istip:
                 ints += 1
         return ints
+    
+    def is_rooted(self):
+        n = self
+        while True:
+            if not n.parent:  # at root
+                if len(self.children) == 2:
+                    return True
+                else:
+                    return False
+            n = self.parent
+
+    def unroot(self):
+        if self.is_rooted:  # guarantees two children
+            children = sorted(self.children,
+                              key=lambda x: len(x.lvsnms()), reverse=True)
+            # this ensures that tip nodes will be last
+            toDel = children[0]
+            brlen = toDel.length
+            children[1].length += brlen
+            toDelChildren = toDel.children
+            toDel.prune()
+            for c in toDelChildren:
+                self.add_child(c)
+            return self
+        else:
+            return self
+        # this won't work for the allowed rooted tritomy, but is fine
+        # for my purposes
+
 
 def node2size(node, d=None):
     "map node and descendants to number of descendant tips"

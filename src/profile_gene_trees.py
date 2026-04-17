@@ -213,6 +213,8 @@ def profile_gene_trees():
 
     for tree_file in args.gene_trees:
         gene_tree = newick3.parse_from_file(tree_file)
+        if gene_tree.is_rooted():
+            gene_tree.unroot()
         gene_taxa = set(gene_tree.lvsnms())
         gene_splits = list(phylo3.get_gene_tree_splits(gene_tree))
         # print(gene_splits)

@@ -1,4 +1,5 @@
 #import sets
+import copy
 
 PREORDER = 0; POSTORDER = 1
 BRANCHLENGTH = 0; INTERNODES = 1
@@ -266,10 +267,10 @@ class Node:
                     return True
                 else:
                     return False
-            n = self.parent
+            n = n.parent
 
     def unroot(self):
-        if self.is_rooted:  # guarantees two children
+        if self.is_rooted():  # guarantees two children
             children = sorted(self.children,
                               key=lambda x: len(x.lvsnms()), reverse=True)
             # this ensures that tip nodes will be last
@@ -286,6 +287,54 @@ class Node:
         # this won't work for the allowed rooted tritomy, but is fine
         # for my purposes
 
+    def nni(self):
+        """
+        for an internal branch, return the two NNI neighbours
+        """
+        if self.istip:
+            raise ValueError("nni: self must be internal node")
+        # root is okay but we have to handle specially
+        if self.parent is None:
+            nni1 = copy.deepcopy(self)
+            nni2 = copy.deepcopy(self)
+            if len(self.children) == 2:
+                if any([c.istip for c in self.children]):
+                    raise ValueError("nni: not defined for binary root")
+                p1, p2 = nni1.children[0].children
+                p3, p4 = nni1.children[1].children
+                nni1.children[0].children = [p1, p3]
+                nni1.children[1].children = [p2, p4]
+                p1, p2 = nni2.children[0].children
+                p3, p4 = nni2.children[1].children
+                nni2.children[0].children = [p1, p4]
+                nni2.children[1].children = [p2, p3]
+                return nni1, nni2
+            elif len(self.children) == 3:  # unrooted tree, tritomy
+                # something
+                p1, p2 = nni1.children[0].children
+                p3, p4 = nni1.children[1:]
+                nni1.children[0].children = [p1, p3]
+                nni1.children[1] = p2
+                nni1.children[2] = p4
+                p1, p2 = nni2.children[0].children
+                p3, p4 = nni2.children[1:]
+                nni2.children[0].children = [p1, p4]
+                nni2.children[1] = p2
+                nni2.children[2] = p3
+                return nni1, nni2
+        if len(self.children) > 2:
+            raise ValueError("nni: currently only works on binary trees")
+        # grab the first two partitions as the two clades/tips descending self
+        # for the case down to the root from an internal branch, the trick is to use that as the
+        # focal partition onto which we regraft the others
+        par = self.parent
+        nni1 = copy.deepcopy(par)
+        nni2 = copy.deepcopy(par)
+        if len(par.children) > 2 and par.parent is None:
+            return par.nni()
+        if len(par.children) > 2:
+            raise ValueError("nni: more than two clades/tips on lower side of branch")
+        
 
 def node2size(node, d=None):
     "map node and descendants to number of descendant tips"
@@ -319,7 +368,6 @@ def reroot(oldroot, newroot):
         cp.length = node.length
         cp.label = node.label
     return newroot
-
 
 def getMRCA(innames, tree):
     mrca = None
